@@ -9,6 +9,7 @@
 import UIKit
 
 class ViewController: UIViewController {
+    //TODO pole pre ukladanie hodnot farieb do flow mode
     
     let COLOR_PICKING_VIEW_HEIGHT = 150, TIMER_VIEW_HEIGHT = 220, NOT_ASSIGNED_VALUE = -1, FLOW_MODE_HEIGHT = 270,
             NUMBER_OF_COLORS_FLOW_MODE = 4
@@ -469,6 +470,8 @@ class ViewController: UIViewController {
             
             let speed = (1.1 - flowSpeedSlider.value) * 5
             timerFlowMode = Timer.scheduledTimer(timeInterval: TimeInterval(speed), target: self, selector: #selector(flowingColors), userInfo: nil, repeats: true)
+            indexOfColorFlowMode = 4
+            flowingColors()
         }
     }
     
@@ -497,6 +500,9 @@ class ViewController: UIViewController {
         if flowModeActive == true {
             flowModeActive = false
             timerFlowMode.invalidate()
+            let colorValue = CGFloat(colorSlider.value)
+            let color = UIColor(hue: colorValue, saturation: 1.0, brightness: 1.0, alpha: 1.0)
+            self.view.backgroundColor = color
         }
     }
     @IBAction func flowSpeedSliderValueChanged(_ sender: Any) {
