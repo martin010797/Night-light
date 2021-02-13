@@ -9,10 +9,13 @@
 import UIKit
 
 class ViewController: UIViewController {
-    //TODO pole pre ukladanie hodnot farieb do flow mode
-    
-    let COLOR_PICKING_VIEW_HEIGHT = 150, TIMER_VIEW_HEIGHT = 220, NOT_ASSIGNED_VALUE = -1, FLOW_MODE_HEIGHT = 270,
-            NUMBER_OF_COLORS_FLOW_MODE = 4
+    let COLOR_PICKING_VIEW_HEIGHT = 150, TIMER_VIEW_HEIGHT = 220, FLOW_MODE_HEIGHT = 270
+    let NOT_ASSIGNED_VALUE = -1
+    let NUMBER_OF_COLORS_FLOW_MODE = 4
+    let COLOR_TAB = 0, TIMER_TAB = 1, FLOW_MODE_TAB = 2
+    let DEFAULT_COLOR_VALUE:Float = 0.5
+    let DEFAULT_TIMER_VALUE = 60
+    let FIRST_COLOR_BUTTON_INDEX = 0, SECOND_COLOR_BUTTON_INDEX = 1, THIRD_COLOR_BUTTON_INDEX = 2, FOURTH_COLOR_BUTTON_INDEX = 3
     
     var hours = -1
     var minutes = -1
@@ -20,10 +23,10 @@ class ViewController: UIViewController {
     var changedColorFlowModeIndex = 0
     var flowModeActive = false
     var indexOfColorFlowMode = 0
-//    var colorImage:UIImage = UIImage(contentsOfFile: "")
     
     var timerBeforeExit: Timer!
     var timerFlowMode: Timer!
+    var userData: UserData?
     
     @IBOutlet var colorSlider: UISlider!
     @IBOutlet var brightnessSlider: UISlider!
@@ -52,36 +55,78 @@ class ViewController: UIViewController {
     @IBOutlet var startFlowModeButton: UIButton!
     @IBOutlet var stopFlowModeButton: UIButton!
     
-//    var drawingView: DrawView!    
+    struct UserData {
+        //these are saved to user defaults
+        var oneColorLight: Float
+        var arrayOfFlowModeColors = [Float]()
+        var flowSpeed: Float
+        var timerHours: Int
+        var timerMinutes: Int
+    }
+    struct ShutdownTimer {
+        var hours: Int
+        var minutes: Int
+        var seconds: Int
+        var timerBeforeExit: Timer!
+    }
+    struct FlowMode {
+        var changedColorFlowModeIndex: Int
+        var flowModeActive: Bool
+        var indexOfColorFlowMode: Int
+        var timerFlowMode: Timer!
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        //user data
+        if userData == nil {
+            var flowModeColors = [Float]()
+            for _ in 1...4 {
+                flowModeColors.append(0.3)
+            }
+            userData = UserData(oneColorLight: 0.6, arrayOfFlowModeColors: flowModeColors, flowSpeed: 0.6, timerHours: 1, timerMinutes: 30)
+        }
         
-//        drawingView = DrawView()
-//        drawingView.backgroundColor = UIColor.gray
-//        self.view.addSubview(drawingView)
-//        drawingView.frame = self.view.frame
-        
+        //to avoid display turning off
         UIApplication.shared.isIdleTimerDisabled = true
-        brightnessSlider.value = Float(UIScreen.main.brightness)
         
-        var colorValue = CGFloat(colorSlider.value)
-        var color = UIColor(hue: colorValue, saturation: 1.0, brightness: 1.0, alpha: 1.0)
+        brightnessSlider.value = Float(UIScreen.main.brightness)
+        //setting slider value and background color
+        if userData != nil {
+            colorSlider.value = userData?.oneColorLight ?? DEFAULT_COLOR_VALUE
+        }else{
+            colorSlider.value = DEFAULT_COLOR_VALUE
+        }
+        let colorValue = CGFloat(colorSlider.value)
+        let color = UIColor(hue: colorValue, saturation: 1.0, brightness: 1.0, alpha: 1.0)
         self.view.backgroundColor = color
         
+        self.view.layoutIfNeeded()
+        
+        //setting color tab
+        choiceButtons.selectedSegmentIndex = COLOR_TAB
+        colorViewHeight.constant = CGFloat(COLOR_PICKING_VIEW_HEIGHT)
         colorSlider.thumbTintColor = color
         blackButton.backgroundColor = UIColor.black
         whiteButton.backgroundColor = UIColor.white
         
-        choiceButtons.selectedSegmentIndex = 0
-        colorViewHeight.constant = CGFloat(COLOR_PICKING_VIEW_HEIGHT)
-        self.view.layoutIfNeeded()
+        //setting timer tab values
+        if userData != nil {
+            let min = userData?.timerMinutes ?? 1
+            let hrs = userData?.timerHours ?? 0
+            countDownTimer.countDownDuration = TimeInterval((hrs * 60 + min) * 60)
+        }else{
+            countDownTimer.countDownDuration = TimeInterval(DEFAULT_TIMER_VALUE)
+        }
+        
+        //hiding timer tab
         countDownTimer.isHidden = true
         startButton.isHidden = true
         stopButton.isHidden = true
         timerLabel.isHidden = true
         
+        //hiding flow mode tab
         colorSliderFlowMode.isHidden = true
         flowSpeedLabel.isHidden = true
         flowSpeedSlider.isHidden = true
@@ -97,10 +142,28 @@ class ViewController: UIViewController {
         startFlowModeButton.isHidden = true
         stopFlowModeButton.isHidden = true
 
-        firstColorFMButton.backgroundColor = UIColor.black
-        secondColorFMButton.backgroundColor = UIColor.black
-        thirdColorFMButton.backgroundColor = UIColor.black
-        fourthColorFMButton.backgroundColor = UIColor.black
+        //setting color buttons for flow mode
+        if userData != nil {
+            var colors = [UIColor]()
+            for i in 0...3 {
+                colors.append(UIColor(hue: CGFloat(userData?.arrayOfFlowModeColors[i] ?? DEFAULT_COLOR_VALUE), saturation: 1.0, brightness: 1.0, alpha: 1.0))
+            }
+            firstColorFMButton.backgroundColor = colors[0]
+            secondColorFMButton.backgroundColor = colors[1]
+            thirdColorFMButton.backgroundColor = colors[2]
+            fourthColorFMButton.backgroundColor = colors[3]
+        }else{
+            let defColor = UIColor(hue: CGFloat(DEFAULT_COLOR_VALUE), saturation: 1.0, brightness: 1.0, alpha: 1.0)
+            firstColorFMButton.backgroundColor = defColor
+            secondColorFMButton.backgroundColor = defColor
+            thirdColorFMButton.backgroundColor = defColor
+            fourthColorFMButton.backgroundColor = defColor
+        }
+        
+//        firstColorFMButton.backgroundColor = UIColor.black
+//        secondColorFMButton.backgroundColor = UIColor.black
+//        thirdColorFMButton.backgroundColor = UIColor.black
+//        fourthColorFMButton.backgroundColor = UIColor.black
         firstColorFMButton.layer.cornerRadius = 0.5 * firstColorFMButton.bounds.size.width
         secondColorFMButton.layer.cornerRadius = 0.5 * secondColorFMButton.bounds.size.width
         thirdColorFMButton.layer.cornerRadius = 0.5 * thirdColorFMButton.bounds.size.width
@@ -109,10 +172,6 @@ class ViewController: UIViewController {
         secondColorFMButton.titleLabel?.text = ""
         thirdColorFMButton.titleLabel?.text = ""
         fourthColorFMButton.titleLabel?.text = ""
-        
-//        colorImage = firstColorFMButton.currentImage!
-//        firstColorFMButton.setImage(nil, for: .normal)
-        
     }
     
     @objc func showTimer(){
@@ -257,7 +316,7 @@ class ViewController: UIViewController {
     
     @IBAction func choiceChanged(_ sender: Any) {
         switch choiceButtons.selectedSegmentIndex {
-        case 0:
+        case COLOR_TAB:
             colorSlider.isHidden = false
             blackButton.isHidden = false
             whiteButton.isHidden = false
@@ -283,7 +342,7 @@ class ViewController: UIViewController {
             colorViewHeight.constant = CGFloat(COLOR_PICKING_VIEW_HEIGHT)
             self.view.layoutIfNeeded()
             
-        case 1:
+        case TIMER_TAB:
             colorSlider.isHidden = true
             blackButton.isHidden = true
             whiteButton.isHidden = true
@@ -312,7 +371,7 @@ class ViewController: UIViewController {
             colorViewHeight.constant = CGFloat(TIMER_VIEW_HEIGHT)
             self.view.layoutIfNeeded()
 
-        case 2:
+        case FLOW_MODE_TAB:
             colorSlider.isHidden = true
             blackButton.isHidden = true
             whiteButton.isHidden = true
@@ -331,20 +390,27 @@ class ViewController: UIViewController {
             fourthColorFMButton.isHidden = false
             startFlowModeButton.isHidden = false
             stopFlowModeButton.isHidden = false
-            var colorValue = CGFloat(colorSliderFlowMode.value)
-            var color = UIColor(hue: colorValue, saturation: 1.0, brightness: 1.0, alpha: 1.0)
+            
+            if userData != nil {
+                colorSliderFlowMode.value = userData?.arrayOfFlowModeColors[changedColorFlowModeIndex] ?? DEFAULT_COLOR_VALUE
+            }else{
+                colorSliderFlowMode.value = DEFAULT_COLOR_VALUE
+            }
+            let colorValue = CGFloat(colorSliderFlowMode.value)
+            let color = UIColor(hue: colorValue, saturation: 1.0, brightness: 1.0, alpha: 1.0)
             colorSliderFlowMode.thumbTintColor = color
+            
             switch changedColorFlowModeIndex {
-            case 0:
+            case FIRST_COLOR_BUTTON_INDEX:
                 firstColorPointerLabel.isHidden = false
                 firstColorFMButton.backgroundColor = color
-            case 1:
+            case SECOND_COLOR_BUTTON_INDEX:
                 secondColorPointerLabel.isHidden = false
                 secondColorFMButton.backgroundColor = color
-            case 2:
+            case THIRD_COLOR_BUTTON_INDEX:
                 thirdColorPointerLabel.isHidden = false
                 thirdColorFMButton.backgroundColor = color
-            case 3:
+            case FOURTH_COLOR_BUTTON_INDEX:
                 fourthColorPointerLabel.isHidden = false
                 fourthColorFMButton.backgroundColor = color
             default:
@@ -388,19 +454,25 @@ class ViewController: UIViewController {
     }
     
     @IBAction func colorSliderFMValueChanged(_ sender: Any) {
-        var colorValue = CGFloat(colorSliderFlowMode.value)
-        var color = UIColor(hue: colorValue, saturation: 1.0, brightness: 1.0, alpha: 1.0)
+        let colorValue = CGFloat(colorSliderFlowMode.value)
+        let color = UIColor(hue: colorValue, saturation: 1.0, brightness: 1.0, alpha: 1.0)
         
         colorSliderFlowMode.thumbTintColor = color
         
+        if userData != nil {
+            if userData?.arrayOfFlowModeColors != nil {
+                userData?.arrayOfFlowModeColors[changedColorFlowModeIndex] = colorSliderFlowMode.value
+            }
+        }
+        
         switch changedColorFlowModeIndex {
-        case 0:
+        case FIRST_COLOR_BUTTON_INDEX:
             firstColorFMButton.backgroundColor = color
-        case 1:
+        case SECOND_COLOR_BUTTON_INDEX:
             secondColorFMButton.backgroundColor = color
-        case 2:
+        case THIRD_COLOR_BUTTON_INDEX:
             thirdColorFMButton.backgroundColor = color
-        case 3:
+        case FOURTH_COLOR_BUTTON_INDEX:
             fourthColorFMButton.backgroundColor = color
         default:
             firstColorFMButton.backgroundColor = color
@@ -408,7 +480,12 @@ class ViewController: UIViewController {
     }
     
     @IBAction func firstColorButtonPressed(_ sender: Any) {
-        colorSliderFlowMode.value = Float(0.5)
+        if userData != nil {
+            colorSliderFlowMode.value = userData?.arrayOfFlowModeColors[FIRST_COLOR_BUTTON_INDEX] ?? DEFAULT_COLOR_VALUE
+        }else{
+            colorSliderFlowMode.value = DEFAULT_COLOR_VALUE
+        }
+//        colorSliderFlowMode.value = Float(0.5)
         var colorValue = CGFloat(colorSliderFlowMode.value)
         var color = UIColor(hue: colorValue, saturation: 1.0, brightness: 1.0, alpha: 1.0)
         firstColorFMButton.backgroundColor = color
@@ -422,7 +499,12 @@ class ViewController: UIViewController {
     }
     
     @IBAction func secondColorButtonPressed(_ sender: Any) {
-        colorSliderFlowMode.value = Float(0.5)
+        if userData != nil {
+            colorSliderFlowMode.value = userData?.arrayOfFlowModeColors[SECOND_COLOR_BUTTON_INDEX] ?? DEFAULT_COLOR_VALUE
+        }else{
+            colorSliderFlowMode.value = DEFAULT_COLOR_VALUE
+        }
+//        colorSliderFlowMode.value = Float(0.5)
         var colorValue = CGFloat(colorSliderFlowMode.value)
         var color = UIColor(hue: colorValue, saturation: 1.0, brightness: 1.0, alpha: 1.0)
         secondColorFMButton.backgroundColor = color
@@ -437,7 +519,12 @@ class ViewController: UIViewController {
     }
     
     @IBAction func thirdColorButtonPressed(_ sender: Any) {
-        colorSliderFlowMode.value = Float(0.5)
+        if userData != nil {
+            colorSliderFlowMode.value = userData?.arrayOfFlowModeColors[THIRD_COLOR_BUTTON_INDEX] ?? DEFAULT_COLOR_VALUE
+        }else{
+            colorSliderFlowMode.value = DEFAULT_COLOR_VALUE
+        }
+//        colorSliderFlowMode.value = Float(0.5)
         var colorValue = CGFloat(colorSliderFlowMode.value)
         var color = UIColor(hue: colorValue, saturation: 1.0, brightness: 1.0, alpha: 1.0)
         thirdColorFMButton.backgroundColor = color
@@ -451,7 +538,12 @@ class ViewController: UIViewController {
     }
     
     @IBAction func fourthColorButtonPressed(_ sender: Any) {
-        colorSliderFlowMode.value = Float(0.5)
+        if userData != nil {
+            colorSliderFlowMode.value = userData?.arrayOfFlowModeColors[FOURTH_COLOR_BUTTON_INDEX] ?? DEFAULT_COLOR_VALUE
+        }else{
+            colorSliderFlowMode.value = DEFAULT_COLOR_VALUE
+        }
+//        colorSliderFlowMode.value = Float(0.5)
         var colorValue = CGFloat(colorSliderFlowMode.value)
         var color = UIColor(hue: colorValue, saturation: 1.0, brightness: 1.0, alpha: 1.0)
         fourthColorFMButton.backgroundColor = color
@@ -483,13 +575,13 @@ class ViewController: UIViewController {
             indexOfColorFlowMode = 0
         }
         switch indexOfColorFlowMode {
-        case 0:
+        case FIRST_COLOR_BUTTON_INDEX:
             self.view.backgroundColor = firstColorFMButton.backgroundColor
-        case 1:
+        case SECOND_COLOR_BUTTON_INDEX:
             self.view.backgroundColor = secondColorFMButton.backgroundColor
-        case 2:
+        case THIRD_COLOR_BUTTON_INDEX:
             self.view.backgroundColor = thirdColorFMButton.backgroundColor
-        case 3:
+        case FOURTH_COLOR_BUTTON_INDEX:
             self.view.backgroundColor = fourthColorFMButton.backgroundColor
         default:
             print("invalid index")
