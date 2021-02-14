@@ -48,12 +48,13 @@ class ViewController: UIViewController {
     @IBOutlet var secondColorFMButton: UIButton!
     @IBOutlet var thirdColorFMButton: UIButton!
     @IBOutlet var fourthColorFMButton: UIButton!
-    @IBOutlet var firstColorPointerLabel: UILabel!
-    @IBOutlet var secondColorPointerLabel: UILabel!
-    @IBOutlet var thirdColorPointerLabel: UILabel!
-    @IBOutlet var fourthColorPointerLabel: UILabel!
+    @IBOutlet weak var firstColorPointer: UIImageView!
+    @IBOutlet weak var secondColorPointer: UIImageView!
+    @IBOutlet weak var thirdColorPointer: UIImageView!
+    @IBOutlet weak var fourthColorPointer: UIImageView!
+    
+//    @IBOutlet var fourthColorPointerLabel: UILabel!
     @IBOutlet var startFlowModeButton: UIButton!
-    @IBOutlet var stopFlowModeButton: UIButton!
     
     struct UserData {
         var oneColorLight: Float
@@ -134,12 +135,16 @@ class ViewController: UIViewController {
         secondColorFMButton.isHidden = true
         thirdColorFMButton.isHidden = true
         fourthColorFMButton.isHidden = true
-        firstColorPointerLabel.isHidden = true
-        secondColorPointerLabel.isHidden = true
-        thirdColorPointerLabel.isHidden = true
-        fourthColorPointerLabel.isHidden = true
+        firstColorPointer.isHidden = true
+        secondColorPointer.isHidden = true
+        thirdColorPointer.isHidden = true
+        fourthColorPointer.isHidden = true
         startFlowModeButton.isHidden = true
-        stopFlowModeButton.isHidden = true
+        firstColorPointer.transform = CGAffineTransform(rotationAngle: CGFloat(Float.pi))
+        secondColorPointer.transform = CGAffineTransform(rotationAngle: CGFloat(Float.pi))
+        thirdColorPointer.transform = CGAffineTransform(rotationAngle: CGFloat(Float.pi))
+        fourthColorPointer.transform = CGAffineTransform(rotationAngle: CGFloat(Float.pi))
+
 
         //setting color buttons for flow mode
         if userData != nil {
@@ -260,7 +265,6 @@ class ViewController: UIViewController {
         colorView.layer.cornerRadius = 15.0
         startButton.layer.cornerRadius = 15.0
         startFlowModeButton.layer.cornerRadius = 15.0
-        stopFlowModeButton.layer.cornerRadius = 15.0
         
         hours = NOT_ASSIGNED_VALUE
         minutes = NOT_ASSIGNED_VALUE
@@ -330,12 +334,11 @@ class ViewController: UIViewController {
             secondColorFMButton.isHidden = true
             thirdColorFMButton.isHidden = true
             fourthColorFMButton.isHidden = true
-            firstColorPointerLabel.isHidden = true
-            secondColorPointerLabel.isHidden = true
-            thirdColorPointerLabel.isHidden = true
-            fourthColorPointerLabel.isHidden = true
+            firstColorPointer.isHidden = true
+            secondColorPointer.isHidden = true
+            thirdColorPointer.isHidden = true
+            fourthColorPointer.isHidden = true
             startFlowModeButton.isHidden = true
-            stopFlowModeButton.isHidden = true
             colorViewHeight.constant = CGFloat(COLOR_PICKING_VIEW_HEIGHT)
             self.view.layoutIfNeeded()
             
@@ -358,12 +361,11 @@ class ViewController: UIViewController {
             secondColorFMButton.isHidden = true
             thirdColorFMButton.isHidden = true
             fourthColorFMButton.isHidden = true
-            firstColorPointerLabel.isHidden = true
-            secondColorPointerLabel.isHidden = true
-            thirdColorPointerLabel.isHidden = true
-            fourthColorPointerLabel.isHidden = true
+            firstColorPointer.isHidden = true
+            secondColorPointer.isHidden = true
+            thirdColorPointer.isHidden = true
+            fourthColorPointer.isHidden = true
             startFlowModeButton.isHidden = true
-            stopFlowModeButton.isHidden = true
             colorViewHeight.constant = CGFloat(TIMER_VIEW_HEIGHT)
             self.view.layoutIfNeeded()
 
@@ -384,7 +386,6 @@ class ViewController: UIViewController {
             thirdColorFMButton.isHidden = false
             fourthColorFMButton.isHidden = false
             startFlowModeButton.isHidden = false
-            stopFlowModeButton.isHidden = false
             
             if userData != nil {
                 colorSliderFlowMode.value = userData?.arrayOfFlowModeColors[changedColorFlowModeIndex] ?? DEFAULT_COLOR_VALUE
@@ -397,19 +398,19 @@ class ViewController: UIViewController {
             
             switch changedColorFlowModeIndex {
             case FIRST_COLOR_BUTTON_INDEX:
-                firstColorPointerLabel.isHidden = false
+                firstColorPointer.isHidden = false
                 firstColorFMButton.backgroundColor = color
             case SECOND_COLOR_BUTTON_INDEX:
-                secondColorPointerLabel.isHidden = false
+                secondColorPointer.isHidden = false
                 secondColorFMButton.backgroundColor = color
             case THIRD_COLOR_BUTTON_INDEX:
-                thirdColorPointerLabel.isHidden = false
+                thirdColorPointer.isHidden = false
                 thirdColorFMButton.backgroundColor = color
             case FOURTH_COLOR_BUTTON_INDEX:
-                fourthColorPointerLabel.isHidden = false
+                fourthColorPointer.isHidden = false
                 fourthColorFMButton.backgroundColor = color
             default:
-                firstColorPointerLabel.isHidden = false
+                firstColorPointer.isHidden = false
                 firstColorFMButton.backgroundColor = color
             }
             
@@ -488,10 +489,10 @@ class ViewController: UIViewController {
         colorSliderFlowMode.thumbTintColor = color
         
         changedColorFlowModeIndex = 0
-        firstColorPointerLabel.isHidden = false
-        secondColorPointerLabel.isHidden = true
-        thirdColorPointerLabel.isHidden = true
-        fourthColorPointerLabel.isHidden = true
+        firstColorPointer.isHidden = false
+        secondColorPointer.isHidden = true
+        thirdColorPointer.isHidden = true
+        fourthColorPointer.isHidden = true
     }
     
     @IBAction func secondColorButtonPressed(_ sender: Any) {
@@ -507,10 +508,10 @@ class ViewController: UIViewController {
         colorSliderFlowMode.thumbTintColor = color
 
         changedColorFlowModeIndex = 1
-        firstColorPointerLabel.isHidden = true
-        secondColorPointerLabel.isHidden = false
-        thirdColorPointerLabel.isHidden = true
-        fourthColorPointerLabel.isHidden = true
+        firstColorPointer.isHidden = true
+        secondColorPointer.isHidden = false
+        thirdColorPointer.isHidden = true
+        fourthColorPointer.isHidden = true
         
     }
     
@@ -527,10 +528,10 @@ class ViewController: UIViewController {
         colorSliderFlowMode.thumbTintColor = color
         
         changedColorFlowModeIndex = 2
-        firstColorPointerLabel.isHidden = true
-        secondColorPointerLabel.isHidden = true
-        thirdColorPointerLabel.isHidden = false
-        fourthColorPointerLabel.isHidden = true
+        firstColorPointer.isHidden = true
+        secondColorPointer.isHidden = true
+        thirdColorPointer.isHidden = false
+        fourthColorPointer.isHidden = true
     }
     
     @IBAction func fourthColorButtonPressed(_ sender: Any) {
@@ -546,20 +547,29 @@ class ViewController: UIViewController {
         colorSliderFlowMode.thumbTintColor = color
 
         changedColorFlowModeIndex = 3
-        firstColorPointerLabel.isHidden = true
-        secondColorPointerLabel.isHidden = true
-        thirdColorPointerLabel.isHidden = true
-        fourthColorPointerLabel.isHidden = false
+        firstColorPointer.isHidden = true
+        secondColorPointer.isHidden = true
+        thirdColorPointer.isHidden = true
+        fourthColorPointer.isHidden = false
     }
     
     @IBAction func startButtonFlowModePressed(_ sender: Any) {
         if flowModeActive == false {
+            startFlowModeButton.setImage(UIImage(systemName: "stop.fill"), for: UIControl.State.normal)
+            startFlowModeButton.tintColor = .systemRed
             flowModeActive = true
-            
             let speed = (1.1 - flowSpeedSlider.value) * 5
             timerFlowMode = Timer.scheduledTimer(timeInterval: TimeInterval(speed), target: self, selector: #selector(flowingColors), userInfo: nil, repeats: true)
             indexOfColorFlowMode = 4
             flowingColors()
+        }else{
+            startFlowModeButton.setImage(UIImage(systemName: "play.fill"), for: UIControl.State.normal)
+            startFlowModeButton.tintColor = .systemGreen
+            flowModeActive = false
+            timerFlowMode.invalidate()
+            let colorValue = CGFloat(colorSlider.value)
+            let color = UIColor(hue: colorValue, saturation: 1.0, brightness: 1.0, alpha: 1.0)
+            self.view.backgroundColor = color
         }
     }
     
@@ -584,15 +594,6 @@ class ViewController: UIViewController {
         }
     }
     
-    @IBAction func stopButtonFlowModePressed(_ sender: Any) {
-        if flowModeActive == true {
-            flowModeActive = false
-            timerFlowMode.invalidate()
-            let colorValue = CGFloat(colorSlider.value)
-            let color = UIColor(hue: colorValue, saturation: 1.0, brightness: 1.0, alpha: 1.0)
-            self.view.backgroundColor = color
-        }
-    }
     @IBAction func flowSpeedSliderValueChanged(_ sender: Any) {
         //timerFlowMode.timeInterval =
         if flowModeActive == true {
