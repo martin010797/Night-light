@@ -9,7 +9,7 @@
 import UIKit
 
 class ViewController: UIViewController {
-    let COLOR_PICKING_VIEW_HEIGHT = 150, TIMER_VIEW_HEIGHT = 220, FLOW_MODE_HEIGHT = 270
+    let COLOR_PICKING_VIEW_HEIGHT = 150, TIMER_VIEW_HEIGHT = 180, FLOW_MODE_HEIGHT = 270
     let NOT_ASSIGNED_VALUE = -1
     let NUMBER_OF_COLORS_FLOW_MODE = 4
     let COLOR_TAB = 0, TIMER_TAB = 1, FLOW_MODE_TAB = 2
@@ -37,8 +37,8 @@ class ViewController: UIViewController {
     @IBOutlet var colorViewHeight: NSLayoutConstraint!
     @IBOutlet var countDownTimer: UIDatePicker!
     @IBOutlet var startButton: UIButton!
-    @IBOutlet var stopButton: UIButton!
     @IBOutlet var timerLabel: UILabel!
+    @IBOutlet weak var timerView: UIView!
     
     @IBOutlet var colorSliderFlowMode: UISlider!
     @IBOutlet var flowSpeedSlider: UISlider!
@@ -56,7 +56,6 @@ class ViewController: UIViewController {
     @IBOutlet var stopFlowModeButton: UIButton!
     
     struct UserData {
-        //these are saved to user defaults
         var oneColorLight: Float
         var arrayOfFlowModeColors = [Float]()
         var flowSpeed: Float
@@ -70,15 +69,16 @@ class ViewController: UIViewController {
         var timerBeforeExit: Timer!
     }
     struct FlowMode {
-        var changedColorFlowModeIndex: Int
-        var flowModeActive: Bool
-        var indexOfColorFlowMode: Int
-        var timerFlowMode: Timer!
+        var changedColorIndex: Int
+        var active: Bool
+        var indexOfColor: Int
+        var timer: Timer!
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
+
         //user data
         if userData == nil {
             var flowModeColors = [Float]()
@@ -123,8 +123,7 @@ class ViewController: UIViewController {
         //hiding timer tab
         countDownTimer.isHidden = true
         startButton.isHidden = true
-        stopButton.isHidden = true
-        timerLabel.isHidden = true
+        timerView.isHidden = true
         
         //hiding flow mode tab
         colorSliderFlowMode.isHidden = true
@@ -190,7 +189,7 @@ class ViewController: UIViewController {
             minutes = NOT_ASSIGNED_VALUE
             seconds = NOT_ASSIGNED_VALUE
             timerBeforeExit.invalidate()
-            timerLabel.isHidden = true
+            timerView.isHidden = true
             if choiceButtons.selectedSegmentIndex == 1 {
                 countDownTimer.isHidden = false
             }
@@ -260,7 +259,6 @@ class ViewController: UIViewController {
 
         colorView.layer.cornerRadius = 15.0
         startButton.layer.cornerRadius = 15.0
-        stopButton.layer.cornerRadius = 15.0
         startFlowModeButton.layer.cornerRadius = 15.0
         stopFlowModeButton.layer.cornerRadius = 15.0
         
@@ -322,8 +320,7 @@ class ViewController: UIViewController {
             whiteButton.isHidden = false
             countDownTimer.isHidden = true
             startButton.isHidden = true
-            stopButton.isHidden = true
-            timerLabel.isHidden = true
+            timerView.isHidden = true
             
             colorSliderFlowMode.isHidden = true
             flowSpeedLabel.isHidden = true
@@ -347,12 +344,11 @@ class ViewController: UIViewController {
             blackButton.isHidden = true
             whiteButton.isHidden = true
             if seconds != NOT_ASSIGNED_VALUE && minutes != NOT_ASSIGNED_VALUE && seconds != NOT_ASSIGNED_VALUE {
-                timerLabel.isHidden = false
+                timerView.isHidden = false
             }else{
                 countDownTimer.isHidden = false
             }
             startButton.isHidden = false
-            stopButton.isHidden = false
             
             colorSliderFlowMode.isHidden = true
             flowSpeedLabel.isHidden = true
@@ -377,8 +373,7 @@ class ViewController: UIViewController {
             whiteButton.isHidden = true
             countDownTimer.isHidden = true
             startButton.isHidden = true
-            stopButton.isHidden = true
-            timerLabel.isHidden = true
+            timerView.isHidden = true
             
             colorSliderFlowMode.isHidden = false
             flowSpeedLabel.isHidden = false
@@ -430,27 +425,28 @@ class ViewController: UIViewController {
     @IBAction func startButtonPressed(_ sender: Any) {
 //        print(Int(countDownTimer.countDownDuration))
         if seconds == NOT_ASSIGNED_VALUE && minutes == NOT_ASSIGNED_VALUE && seconds == NOT_ASSIGNED_VALUE {
-            var rest = Int(countDownTimer.countDownDuration)
+            startButton.setImage(UIImage(systemName: "stop.fill"), for: UIControl.State.normal)
+            startButton.tintColor = .systemRed
+            let rest = Int(countDownTimer.countDownDuration)
             hours = Int(rest / 60 / 60)
             minutes = (rest - hours * 60 * 60) / 60
             seconds = (rest - hours * 60 * 60 - minutes * 60)
             
             setTimerTextLabel()
-            timerLabel.isHidden = false
+            timerView.isHidden = false
             countDownTimer.isHidden = true
             
             timerBeforeExit = Timer.scheduledTimer(timeInterval: 1.0, target: self, selector: #selector(showTimer), userInfo: nil, repeats: true)
-        }
-    }
-    @IBAction func stopButtonPressed(_ sender: Any) {
-        if seconds != NOT_ASSIGNED_VALUE && minutes != NOT_ASSIGNED_VALUE && seconds != NOT_ASSIGNED_VALUE {
+        }else{
+            startButton.setImage(UIImage(systemName: "play.fill"), for: UIControl.State.normal)
+            startButton.tintColor = .systemGreen
             timerBeforeExit.invalidate()
+            hours = NOT_ASSIGNED_VALUE
+            minutes = NOT_ASSIGNED_VALUE
+            seconds = NOT_ASSIGNED_VALUE
+            timerView.isHidden = true
+            countDownTimer.isHidden = false
         }
-        hours = NOT_ASSIGNED_VALUE
-        minutes = NOT_ASSIGNED_VALUE
-        seconds = NOT_ASSIGNED_VALUE
-        timerLabel.isHidden = true
-        countDownTimer.isHidden = false
     }
     
     @IBAction func colorSliderFMValueChanged(_ sender: Any) {
