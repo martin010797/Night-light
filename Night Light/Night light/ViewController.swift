@@ -28,6 +28,8 @@ class ViewController: UIViewController {
     var timerFlowMode: Timer!
     var userData: UserData?
     
+    var testColorChange = 0
+    
     @IBOutlet var colorSlider: UISlider!
     @IBOutlet var brightnessSlider: UISlider!
     @IBOutlet var colorView: UIView!
@@ -541,8 +543,8 @@ class ViewController: UIViewController {
             colorSliderFlowMode.value = DEFAULT_COLOR_VALUE
         }
 //        colorSliderFlowMode.value = Float(0.5)
-        var colorValue = CGFloat(colorSliderFlowMode.value)
-        var color = UIColor(hue: colorValue, saturation: 1.0, brightness: 1.0, alpha: 1.0)
+        let colorValue = CGFloat(colorSliderFlowMode.value)
+        let color = UIColor(hue: colorValue, saturation: 1.0, brightness: 1.0, alpha: 1.0)
         fourthColorFMButton.backgroundColor = color
         colorSliderFlowMode.thumbTintColor = color
 
@@ -558,7 +560,9 @@ class ViewController: UIViewController {
             startFlowModeButton.setImage(UIImage(systemName: "stop.fill"), for: UIControl.State.normal)
             startFlowModeButton.tintColor = .systemRed
             flowModeActive = true
-            let speed = (1.1 - flowSpeedSlider.value) * 5
+//            let speed = (1.1 - flowSpeedSlider.value) * 5
+            let speed = 0.06
+            testColorChange = 0
             timerFlowMode = Timer.scheduledTimer(timeInterval: TimeInterval(speed), target: self, selector: #selector(flowingColors), userInfo: nil, repeats: true)
             indexOfColorFlowMode = 4
             flowingColors()
@@ -573,33 +577,76 @@ class ViewController: UIViewController {
         }
     }
     
+    
     @objc func flowingColors(){
-        //timerFlowMode.timeInterval =
-        //print(flowSpeedSlider.value)
-        indexOfColorFlowMode += 1
-        if indexOfColorFlowMode >= NUMBER_OF_COLORS_FLOW_MODE {
-            indexOfColorFlowMode = 0
+        if testColorChange == 0 {
+            indexOfColorFlowMode += 1
+            if indexOfColorFlowMode >= NUMBER_OF_COLORS_FLOW_MODE {
+                indexOfColorFlowMode = 0
+            }
+            switch indexOfColorFlowMode {
+            case FIRST_COLOR_BUTTON_INDEX:
+                self.view.backgroundColor = firstColorFMButton.backgroundColor
+            case SECOND_COLOR_BUTTON_INDEX:
+                self.view.backgroundColor = secondColorFMButton.backgroundColor
+            case THIRD_COLOR_BUTTON_INDEX:
+                self.view.backgroundColor = thirdColorFMButton.backgroundColor
+            case FOURTH_COLOR_BUTTON_INDEX:
+                self.view.backgroundColor = fourthColorFMButton.backgroundColor
+            default:
+                print("invalid index")
+            }
         }
-        switch indexOfColorFlowMode {
-        case FIRST_COLOR_BUTTON_INDEX:
-            self.view.backgroundColor = firstColorFMButton.backgroundColor
-        case SECOND_COLOR_BUTTON_INDEX:
-            self.view.backgroundColor = secondColorFMButton.backgroundColor
-        case THIRD_COLOR_BUTTON_INDEX:
-            self.view.backgroundColor = thirdColorFMButton.backgroundColor
-        case FOURTH_COLOR_BUTTON_INDEX:
-            self.view.backgroundColor = fourthColorFMButton.backgroundColor
-        default:
-            print("invalid index")
+        testColorChange += 1
+        let limit = Int(fabsf(1.0 - flowSpeedSlider.value)*150+50)
+        
+        if testColorChange >= (limit-10) {
+            let color1 = (userData?.arrayOfFlowModeColors[indexOfColorFlowMode])!
+            let color2 = (userData?.arrayOfFlowModeColors[(indexOfColorFlowMode + 1)%4])!
+            var colorValue:CGFloat = 0
+            var br:Float = 0
+            if testColorChange < (limit-10+5) {
+                colorValue = CGFloat(color1)
+                br = 1.0 - 0.1 * Float(testColorChange - (limit - 11))
+            }else{
+                colorValue = CGFloat(color2)
+                br = 1.0 - 0.1 * Float(limit + 1 - testColorChange)
+            }
+            let color = UIColor(hue: colorValue, saturation: 1.0, brightness: CGFloat(br), alpha: 1.0)
+            self.view.backgroundColor = color
         }
+        if testColorChange == limit{
+            testColorChange = 0
+        }
+
+//        indexOfColorFlowMode += 1
+//        if indexOfColorFlowMode >= NUMBER_OF_COLORS_FLOW_MODE {
+//            indexOfColorFlowMode = 0
+//        }
+//        switch indexOfColorFlowMode {
+//        case FIRST_COLOR_BUTTON_INDEX:
+//            self.view.backgroundColor = firstColorFMButton.backgroundColor
+//        case SECOND_COLOR_BUTTON_INDEX:
+//            self.view.backgroundColor = secondColorFMButton.backgroundColor
+//        case THIRD_COLOR_BUTTON_INDEX:
+//            self.view.backgroundColor = thirdColorFMButton.backgroundColor
+//        case FOURTH_COLOR_BUTTON_INDEX:
+//            self.view.backgroundColor = fourthColorFMButton.backgroundColor
+//        default:
+//            print("invalid index")
+//        }
     }
     
     @IBAction func flowSpeedSliderValueChanged(_ sender: Any) {
         //timerFlowMode.timeInterval =
         if flowModeActive == true {
-            let speed = (1.1 - flowSpeedSlider.value) * 5
+//            let speed = (1.1 - flowSpeedSlider.value) * 5
+            let speed = 0.06
             timerFlowMode.invalidate()
             timerFlowMode = Timer.scheduledTimer(timeInterval: TimeInterval(speed), target: self, selector: #selector(flowingColors), userInfo: nil, repeats: true)
+            testColorChange = 0
+            indexOfColorFlowMode = 4
+            flowingColors()
         }
     }
 }
