@@ -195,8 +195,26 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
     
     func colorPickerViewControllerDidFinish(_ viewController: UIColorPickerViewController) {
         //actions when Im closing picker
-        UIApplication.shared.statusBarStyle = .darkContent
+        setStatusBarDependingBackgroundColorBrightness()
     }
+    
+    func setStatusBarDependingBackgroundColorBrightness(){
+        let cgColor = self.view.backgroundColor!.cgColor
+        let rgbColor = cgColor.converted(to: CGColorSpaceCreateDeviceRGB(), intent: .defaultIntent, options: nil)
+        let rgbComponents = rgbColor?.components
+        if rgbComponents != nil && rgbComponents?.count ?? 0 >= 3 {
+            let brightness = Float(((rgbComponents![0] * 299) + (rgbComponents![1] * 587) + (rgbComponents![2] * 114)) / 1000)
+            if brightness < 0.5 {
+                UIApplication.shared.statusBarStyle = .lightContent
+            }else{
+                UIApplication.shared.statusBarStyle = .darkContent
+            }
+        }else{
+            UIApplication.shared.statusBarStyle = .lightContent
+        }
+
+    }
+    
     func colorPickerViewControllerDidSelectColor(_ viewController: UIColorPickerViewController) {
         c = viewController.selectedColor
         self.view.backgroundColor = c
@@ -238,8 +256,8 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         
-        //setting status bar
-        UIApplication.shared.statusBarStyle = .darkContent
+        setStatusBarDependingBackgroundColorBrightness()
+//        UIApplication.shared.statusBarStyle = .darkContent
         
         //disable going to sleep
         UIApplication.shared.isIdleTimerDisabled = true;
@@ -280,20 +298,21 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
                 flowMode!.timer?.invalidate()
             }
         }
-        //setting status bar
-        UIApplication.shared.statusBarStyle = .darkContent
+        setStatusBarDependingBackgroundColorBrightness()
+        //        UIApplication.shared.statusBarStyle = .darkContent
     }
     
     @IBAction func blackButtonPressed(_ sender: Any) {
         self.view.backgroundColor = UIColor.black
         //setting status bar
-        UIApplication.shared.statusBarStyle = .lightContent
+        setStatusBarDependingBackgroundColorBrightness()
+//        UIApplication.shared.statusBarStyle = .lightContent
     }
     
     @IBAction func whiteButtonPressed(_ sender: Any) {
-        UIApplication.shared.statusBarStyle = .darkContent
-        //setting status bar
+//        UIApplication.shared.statusBarStyle = .darkContent
         self.view.backgroundColor = UIColor.white
+        setStatusBarDependingBackgroundColorBrightness()
     }
     
     @IBAction func choiceChanged(_ sender: Any) {
@@ -683,6 +702,29 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
                 flowingColors()
             }
         }
+    }
+}
+
+extension UIColor {
+
+    // Check if the color is light or dark, as defined by the injected lightness threshold.
+    // Some people report that 0.7 is best. I suggest to find out for yourself.
+    // A nil value is returned if the lightness couldn't be determined.
+    func isLight(threshold: Float = 0.5) -> Bool? {
+        let originalCGColor = self.cgColor
+
+        // Now we need to convert it to the RGB colorspace. UIColor.white / UIColor.black are greyscale and not RGB.
+        // If you don't do this then you will crash when accessing components index 2 below when evaluating greyscale colors.
+        let RGBCGColor = originalCGColor.converted(to: CGColorSpaceCreateDeviceRGB(), intent: .defaultIntent, options: nil)
+        guard let components = RGBCGColor?.components else {
+            return nil
+        }
+        guard components.count >= 3 else {
+            return nil
+        }
+
+        let brightness = Float(((components[0] * 299) + (components[1] * 587) + (components[2] * 114)) / 1000)
+        return (brightness > threshold)
     }
 }
 
