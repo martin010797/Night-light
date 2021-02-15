@@ -214,6 +214,16 @@
                                             <constraint firstAttribute="width" constant="40" id="DMV-ct-MTp"/>
                                         </constraints>
                                     </imageView>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Vix-lh-Us4">
+                                        <rect key="frame" x="125" y="53" width="40" height="40"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="40" id="nZp-EF-Agy"/>
+                                            <constraint firstAttribute="width" constant="40" id="sxl-5e-zve"/>
+                                        </constraints>
+                                        <connections>
+                                            <action selector="changeColorActionTest:" destination="BYZ-38-t0r" eventType="touchUpInside" id="5hf-fW-wCF"/>
+                                        </connections>
+                                    </button>
                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="shift.fill" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="A1r-NE-iNB" userLabel="thirdColorPointer">
                                         <rect key="frame" x="110" y="5.9999999999999609" width="40" height="17.333333333333336"/>
                                         <color key="tintColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -249,6 +259,7 @@
                                     <constraint firstItem="jmi-cO-7Cd" firstAttribute="top" secondItem="H4B-8j-nAw" secondAttribute="bottom" constant="10" id="Sph-BP-L8n"/>
                                     <constraint firstItem="W01-gL-cGq" firstAttribute="leading" secondItem="A1r-NE-iNB" secondAttribute="trailing" constant="10" id="SwO-0g-xyl"/>
                                     <constraint firstItem="cUb-Lh-DN9" firstAttribute="top" secondItem="hTv-ZG-SJt" secondAttribute="bottom" constant="2" id="Udc-EM-ADJ"/>
+                                    <constraint firstItem="Vix-lh-Us4" firstAttribute="top" secondItem="m8K-XE-pOb" secondAttribute="bottom" constant="10" id="UyC-Lc-2Kt"/>
                                     <constraint firstItem="zp4-wK-3KG" firstAttribute="leading" secondItem="zh5-rY-b0W" secondAttribute="leading" constant="10" id="VS5-uW-yc0"/>
                                     <constraint firstItem="gSj-8Z-6yk" firstAttribute="leading" secondItem="zh5-rY-b0W" secondAttribute="leading" constant="15" id="YCZ-1z-90n"/>
                                     <constraint firstItem="nHK-Hb-HrA" firstAttribute="top" secondItem="VMY-e2-jwj" secondAttribute="bottom" constant="10" id="a9S-Zw-ZVp"/>
@@ -269,6 +280,7 @@
                                     <constraint firstItem="bxR-5w-fPl" firstAttribute="top" secondItem="A1r-NE-iNB" secondAttribute="bottom" constant="2" id="kam-tR-pPB"/>
                                     <constraint firstAttribute="bottom" secondItem="fWE-l7-II4" secondAttribute="bottom" constant="10" id="kvh-Ep-OXx"/>
                                     <constraint firstAttribute="trailing" secondItem="DPn-px-ws2" secondAttribute="trailing" constant="10" id="nmv-7i-5tD"/>
+                                    <constraint firstItem="Vix-lh-Us4" firstAttribute="leading" secondItem="Xl1-Se-y62" secondAttribute="trailing" constant="15" id="poR-pF-FYL"/>
                                     <constraint firstAttribute="trailing" secondItem="zp4-wK-3KG" secondAttribute="trailing" constant="10" id="pxR-P5-MaL"/>
                                     <constraint firstItem="gSj-8Z-6yk" firstAttribute="top" secondItem="m8K-XE-pOb" secondAttribute="bottom" constant="10" id="srT-n0-730"/>
                                     <constraint firstItem="jmi-cO-7Cd" firstAttribute="top" secondItem="bxR-5w-fPl" secondAttribute="bottom" constant="10" id="uo8-BU-8bd"/>
@@ -295,6 +307,7 @@
                     <connections>
                         <outlet property="blackButton" destination="gSj-8Z-6yk" id="yyW-vH-8ZD"/>
                         <outlet property="brightnessSlider" destination="RxZ-mH-T43" id="lhh-r3-mRN"/>
+                        <outlet property="changeColorTest" destination="Vix-lh-Us4" id="dIw-U2-Pf1"/>
                         <outlet property="choiceButtons" destination="m8K-XE-pOb" id="xNH-8T-axv"/>
                         <outlet property="colorLabel" destination="jmi-cO-7Cd" id="Xc2-JX-9Ov"/>
                         <outlet property="colorSlider" destination="jRF-Ai-gsh" id="bsw-4m-kba"/>

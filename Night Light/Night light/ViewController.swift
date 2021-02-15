@@ -8,7 +8,7 @@
 
 import UIKit
 
-class ViewController: UIViewController {
+class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
     let COLOR_PICKING_VIEW_HEIGHT = 150, TIMER_VIEW_HEIGHT = 180, FLOW_MODE_HEIGHT = 270
     let NOT_ASSIGNED_VALUE = -1
     let NUMBER_OF_COLORS_FLOW_MODE = 4
@@ -47,6 +47,10 @@ class ViewController: UIViewController {
     @IBOutlet weak var fourthColorPointer: UIImageView!
     @IBOutlet var startFlowModeButton: UIButton!
     
+    @IBOutlet weak var changeColorTest: UIButton!
+    private var colorPicker = UIColorPickerViewController()
+    private var c = UIColor.black
+    
     struct UserData {
         var oneColorLight: Float
         var arrayOfFlowModeColors = [Float]()
@@ -70,6 +74,8 @@ class ViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        colorPicker.delegate = self
 
         //user data
         if userData == nil {
@@ -112,6 +118,7 @@ class ViewController: UIViewController {
         colorSlider.thumbTintColor = color
         blackButton.backgroundColor = UIColor.black
         whiteButton.backgroundColor = UIColor.white
+        changeColorTest.backgroundColor = UIColor.systemRed
         
         //setting timer tab values
         if userData != nil {
@@ -173,11 +180,26 @@ class ViewController: UIViewController {
 //        thirdColorFMButton.titleLabel?.text = ""
 //        fourthColorFMButton.titleLabel?.text = ""
         
-        brightnessSlider.transform = CGAffineTransform(rotationAngle: CGFloat(Float.pi/2))
+        brightnessSlider.transform = CGAffineTransform(rotationAngle: CGFloat(-Float.pi/2))
 
         colorView.layer.cornerRadius = 15.0
         startButton.layer.cornerRadius = 15.0
         startFlowModeButton.layer.cornerRadius = 15.0
+    }
+    @IBAction func changeColorActionTest(_ sender: Any) {
+        colorPicker.supportsAlpha = true
+        colorPicker.selectedColor = c
+        present(colorPicker, animated: true)
+        UIApplication.shared.statusBarStyle = .lightContent
+    }
+    
+    func colorPickerViewControllerDidFinish(_ viewController: UIColorPickerViewController) {
+        //actions when Im closing picker
+        UIApplication.shared.statusBarStyle = .darkContent
+    }
+    func colorPickerViewControllerDidSelectColor(_ viewController: UIColorPickerViewController) {
+        c = viewController.selectedColor
+        self.view.backgroundColor = c
     }
     
     func setTimerTextLabel(){
@@ -210,6 +232,7 @@ class ViewController: UIViewController {
         super.viewDidLayoutSubviews()
         blackButton.layer.cornerRadius = 0.5 * blackButton.bounds.size.width
         whiteButton.layer.cornerRadius = 0.5 * whiteButton.bounds.size.width
+        changeColorTest.layer.cornerRadius = 0.5 * changeColorTest.bounds.size.width
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -253,7 +276,7 @@ class ViewController: UIViewController {
         colorSlider.thumbTintColor = color
         if flowMode != nil {
             if flowMode!.active == true {
-                flowMode?.active = false
+                flowMode!.active = false
                 flowMode!.timer?.invalidate()
             }
         }
@@ -279,6 +302,7 @@ class ViewController: UIViewController {
             colorSlider.isHidden = false
             blackButton.isHidden = false
             whiteButton.isHidden = false
+            changeColorTest.isHidden = false
             countDownTimer.isHidden = true
             startButton.isHidden = true
             timerView.isHidden = true
@@ -300,6 +324,7 @@ class ViewController: UIViewController {
             self.view.layoutIfNeeded()
             
         case TIMER_TAB:
+            changeColorTest.isHidden = true
             colorSlider.isHidden = true
             blackButton.isHidden = true
             whiteButton.isHidden = true
@@ -330,6 +355,7 @@ class ViewController: UIViewController {
             self.view.layoutIfNeeded()
 
         case FLOW_MODE_TAB:
+            changeColorTest.isHidden = true
             colorSlider.isHidden = true
             blackButton.isHidden = true
             whiteButton.isHidden = true
