@@ -17,18 +17,14 @@ class ViewController: UIViewController {
     let DEFAULT_TIMER_VALUE = 60
     let FIRST_COLOR_BUTTON_INDEX = 0, SECOND_COLOR_BUTTON_INDEX = 1, THIRD_COLOR_BUTTON_INDEX = 2, FOURTH_COLOR_BUTTON_INDEX = 3
     
-    var hours = -1
-    var minutes = -1
-    var seconds = -1
     var changedColorFlowModeIndex = 0
     var flowModeActive = false
     var indexOfColorFlowMode = 0
-    
-    var timerBeforeExit: Timer!
+    var enteredTimes = 0
     var timerFlowMode: Timer!
-    var userData: UserData?
     
-    var testColorChange = 0
+    var userData: UserData?
+    var shutdownTimer: ShutdownTimer?
     
     @IBOutlet var colorSlider: UISlider!
     @IBOutlet var brightnessSlider: UISlider!
@@ -54,8 +50,6 @@ class ViewController: UIViewController {
     @IBOutlet weak var secondColorPointer: UIImageView!
     @IBOutlet weak var thirdColorPointer: UIImageView!
     @IBOutlet weak var fourthColorPointer: UIImageView!
-    
-//    @IBOutlet var fourthColorPointerLabel: UILabel!
     @IBOutlet var startFlowModeButton: UIButton!
     
     struct UserData {
@@ -69,13 +63,14 @@ class ViewController: UIViewController {
         var hours: Int
         var minutes: Int
         var seconds: Int
-        var timerBeforeExit: Timer!
+        var timerBeforeExit: Timer?
     }
     struct FlowMode {
         var changedColorIndex: Int
         var active: Bool
         var indexOfColor: Int
         var timer: Timer!
+        var enteredTimes: Int
     }
     
     override func viewDidLoad() {
@@ -89,6 +84,11 @@ class ViewController: UIViewController {
                 flowModeColors.append(0.3)
             }
             userData = UserData(oneColorLight: 0.6, arrayOfFlowModeColors: flowModeColors, flowSpeed: 0.6, timerHours: 1, timerMinutes: 30)
+        }
+        
+        //timer
+        if shutdownTimer == nil {
+            shutdownTimer = ShutdownTimer(hours: NOT_ASSIGNED_VALUE, minutes: NOT_ASSIGNED_VALUE, seconds: NOT_ASSIGNED_VALUE, timerBeforeExit: nil)
         }
         
         //to avoid display turning off
@@ -165,11 +165,6 @@ class ViewController: UIViewController {
             thirdColorFMButton.backgroundColor = defColor
             fourthColorFMButton.backgroundColor = defColor
         }
-        
-//        firstColorFMButton.backgroundColor = UIColor.black
-//        secondColorFMButton.backgroundColor = UIColor.black
-//        thirdColorFMButton.backgroundColor = UIColor.black
-//        fourthColorFMButton.backgroundColor = UIColor.black
         firstColorFMButton.layer.cornerRadius = 0.5 * firstColorFMButton.bounds.size.width
         secondColorFMButton.layer.cornerRadius = 0.5 * secondColorFMButton.bounds.size.width
         thirdColorFMButton.layer.cornerRadius = 0.5 * thirdColorFMButton.bounds.size.width
@@ -178,61 +173,40 @@ class ViewController: UIViewController {
         secondColorFMButton.titleLabel?.text = ""
         thirdColorFMButton.titleLabel?.text = ""
         fourthColorFMButton.titleLabel?.text = ""
-    }
-    
-    @objc func showTimer(){
-        if seconds > 0{
-            seconds -= 1
-        }else if seconds == 0 && minutes > 0{
-            minutes -= 1
-            seconds = 59
-        }else if seconds == 0 && minutes == 0 && hours > 0{
-            hours -= 1
-            minutes = 59
-            seconds = 59
-        }
-        if hours == 0 && minutes == 0 && seconds == 0{
-            hours = NOT_ASSIGNED_VALUE
-            minutes = NOT_ASSIGNED_VALUE
-            seconds = NOT_ASSIGNED_VALUE
-            timerBeforeExit.invalidate()
-            timerView.isHidden = true
-            if choiceButtons.selectedSegmentIndex == 1 {
-                countDownTimer.isHidden = false
-            }
-            UIApplication.shared.isIdleTimerDisabled = false;
-            UIScreen.main.brightness = CGFloat(0.1)
-            if flowModeActive == true {
-                flowModeActive = false
-                timerFlowMode.invalidate()
-            }
-            exit(-1)
-        }else{
-            setTimerTextLabel()
-        }
+        
+        brightnessSlider.transform = CGAffineTransform(rotationAngle: CGFloat(Float.pi/2))
+
+        colorView.layer.cornerRadius = 15.0
+        startButton.layer.cornerRadius = 15.0
+        startFlowModeButton.layer.cornerRadius = 15.0
+        
+        changedColorFlowModeIndex = 0
     }
     
     func setTimerTextLabel(){
         var helpHours:String = "0"
         var helpMinutes:String = "0"
         var helpSeconds:String = "0"
-        
-        if hours < 10 {
-            helpHours = "0\(hours)"
+        if shutdownTimer != nil {
+            if shutdownTimer!.hours < 10 {
+                helpHours = "0\(shutdownTimer!.hours)"
+            }else{
+                helpHours = "\(shutdownTimer!.hours)"
+            }
+            if shutdownTimer!.minutes < 10 {
+                helpMinutes = "0\(shutdownTimer!.minutes)"
+            }else{
+                helpMinutes = "\(shutdownTimer!.minutes)"
+            }
+            if shutdownTimer!.seconds < 10 {
+                helpSeconds = "0\(shutdownTimer!.seconds)"
+            }else{
+                helpSeconds = "\(shutdownTimer!.seconds)"
+            }
+            timerLabel.text = "\(helpHours):\(helpMinutes):\(helpSeconds)"
         }else{
-            helpHours = "\(hours)"
+            timerLabel.text = "Not available"
         }
-        if minutes < 10 {
-            helpMinutes = "0\(minutes)"
-        }else{
-            helpMinutes = "\(minutes)"
-        }
-        if seconds < 10 {
-            helpSeconds = "0\(seconds)"
-        }else{
-            helpSeconds = "\(seconds)"
-        }
-        timerLabel.text = "\(helpHours):\(helpMinutes):\(helpSeconds)"
     }
     
     override func viewDidLayoutSubviews() {
@@ -252,26 +226,10 @@ class ViewController: UIViewController {
         
         colorView.backgroundColor = UIColor.lightGray
         if traitCollection.userInterfaceStyle == .light {
-//            print("Light mode")
-//            colorSlider.thumbTintColor = UIColor.black
             colorSlider.maximumTrackTintColor = UIColor.black
         } else {
-//            print("Dark mode")
-//            colorSlider.thumbTintColor = UIColor.white
             colorSlider.maximumTrackTintColor = UIColor.white
         }
-        //colorSlider.minimumTrackTintColor = UIColor.white
-        brightnessSlider.transform = CGAffineTransform(rotationAngle: CGFloat(-M_PI_2))
-        brightnessSlider.transform = CGAffineTransform(rotationAngle: CGFloat(-M_PI_2))
-
-        colorView.layer.cornerRadius = 15.0
-        startButton.layer.cornerRadius = 15.0
-        startFlowModeButton.layer.cornerRadius = 15.0
-        
-        hours = NOT_ASSIGNED_VALUE
-        minutes = NOT_ASSIGNED_VALUE
-        seconds = NOT_ASSIGNED_VALUE
-        changedColorFlowModeIndex = 0
     }
 
     @IBAction func tappedScreeen(_ sender: Any) {
@@ -348,11 +306,14 @@ class ViewController: UIViewController {
             colorSlider.isHidden = true
             blackButton.isHidden = true
             whiteButton.isHidden = true
-            if seconds != NOT_ASSIGNED_VALUE && minutes != NOT_ASSIGNED_VALUE && seconds != NOT_ASSIGNED_VALUE {
-                timerView.isHidden = false
-            }else{
-                countDownTimer.isHidden = false
+            if shutdownTimer != nil {
+                if shutdownTimer!.seconds != NOT_ASSIGNED_VALUE && shutdownTimer!.minutes != NOT_ASSIGNED_VALUE && shutdownTimer!.hours != NOT_ASSIGNED_VALUE {
+                    timerView.isHidden = false
+                }else{
+                    countDownTimer.isHidden = false
+                }
             }
+            
             startButton.isHidden = false
             
             colorSliderFlowMode.isHidden = true
@@ -425,30 +386,69 @@ class ViewController: UIViewController {
          
     }
     
+    @objc func showTimer(){
+        if shutdownTimer != nil {
+            if shutdownTimer!.seconds > 0{
+                shutdownTimer!.seconds -= 1
+            }else if shutdownTimer!.seconds == 0 && shutdownTimer!.minutes > 0{
+                shutdownTimer!.minutes -= 1
+                shutdownTimer!.seconds = 59
+            }else if shutdownTimer!.seconds == 0 && shutdownTimer!.minutes == 0 && shutdownTimer!.hours > 0{
+                shutdownTimer!.hours -= 1
+                shutdownTimer!.minutes = 59
+                shutdownTimer!.seconds = 59
+            }
+            if shutdownTimer!.hours == 0 && shutdownTimer!.minutes == 0 && shutdownTimer!.seconds == 0{
+                shutdownTimer!.hours = NOT_ASSIGNED_VALUE
+                shutdownTimer!.minutes = NOT_ASSIGNED_VALUE
+                shutdownTimer!.seconds = NOT_ASSIGNED_VALUE
+                if shutdownTimer!.timerBeforeExit != nil {
+                    shutdownTimer!.timerBeforeExit!.invalidate()
+                }
+                timerView.isHidden = true
+                if choiceButtons.selectedSegmentIndex == 1 {
+                    countDownTimer.isHidden = false
+                }
+                UIApplication.shared.isIdleTimerDisabled = false;
+                UIScreen.main.brightness = CGFloat(0.1)
+                if flowModeActive == true {
+                    flowModeActive = false
+                    timerFlowMode.invalidate()
+                }
+                exit(-1)
+            }else{
+                setTimerTextLabel()
+            }
+        }
+    }
+    
     @IBAction func startButtonPressed(_ sender: Any) {
-//        print(Int(countDownTimer.countDownDuration))
-        if seconds == NOT_ASSIGNED_VALUE && minutes == NOT_ASSIGNED_VALUE && seconds == NOT_ASSIGNED_VALUE {
-            startButton.setImage(UIImage(systemName: "stop.fill"), for: UIControl.State.normal)
-            startButton.tintColor = .systemRed
-            let rest = Int(countDownTimer.countDownDuration)
-            hours = Int(rest / 60 / 60)
-            minutes = (rest - hours * 60 * 60) / 60
-            seconds = (rest - hours * 60 * 60 - minutes * 60)
-            
-            setTimerTextLabel()
-            timerView.isHidden = false
-            countDownTimer.isHidden = true
-            
-            timerBeforeExit = Timer.scheduledTimer(timeInterval: 1.0, target: self, selector: #selector(showTimer), userInfo: nil, repeats: true)
-        }else{
-            startButton.setImage(UIImage(systemName: "play.fill"), for: UIControl.State.normal)
-            startButton.tintColor = .systemGreen
-            timerBeforeExit.invalidate()
-            hours = NOT_ASSIGNED_VALUE
-            minutes = NOT_ASSIGNED_VALUE
-            seconds = NOT_ASSIGNED_VALUE
-            timerView.isHidden = true
-            countDownTimer.isHidden = false
+        if shutdownTimer != nil {
+            if shutdownTimer!.seconds == NOT_ASSIGNED_VALUE && shutdownTimer!.minutes == NOT_ASSIGNED_VALUE && shutdownTimer!.hours == NOT_ASSIGNED_VALUE {
+                startButton.setImage(UIImage(systemName: "stop.fill"), for: UIControl.State.normal)
+                startButton.tintColor = .systemRed
+                let rest = Int(countDownTimer.countDownDuration)
+                shutdownTimer!.hours = Int(rest / 60 / 60)
+                shutdownTimer!.minutes = (rest - shutdownTimer!.hours * 60 * 60) / 60
+                shutdownTimer!.seconds = (rest - shutdownTimer!.hours * 60 * 60 - shutdownTimer!.minutes * 60)
+                
+                setTimerTextLabel()
+                timerView.isHidden = false
+                countDownTimer.isHidden = true
+                
+                shutdownTimer!.timerBeforeExit = Timer.scheduledTimer(timeInterval: 1.0, target: self, selector: #selector(showTimer), userInfo: nil, repeats: true)
+            }else{
+                startButton.setImage(UIImage(systemName: "play.fill"), for: UIControl.State.normal)
+                startButton.tintColor = .systemGreen
+                if shutdownTimer!.timerBeforeExit != nil {
+                    shutdownTimer!.timerBeforeExit!.invalidate()
+                }
+                shutdownTimer!.hours = NOT_ASSIGNED_VALUE
+                shutdownTimer!.minutes = NOT_ASSIGNED_VALUE
+                shutdownTimer!.seconds = NOT_ASSIGNED_VALUE
+                timerView.isHidden = true
+                countDownTimer.isHidden = false
+            }
         }
     }
     
@@ -562,7 +562,7 @@ class ViewController: UIViewController {
             flowModeActive = true
 //            let speed = (1.1 - flowSpeedSlider.value) * 5
             let speed = 0.06
-            testColorChange = 0
+            enteredTimes = 0
             timerFlowMode = Timer.scheduledTimer(timeInterval: TimeInterval(speed), target: self, selector: #selector(flowingColors), userInfo: nil, repeats: true)
             indexOfColorFlowMode = 4
             flowingColors()
@@ -579,7 +579,7 @@ class ViewController: UIViewController {
     
     
     @objc func flowingColors(){
-        if testColorChange == 0 {
+        if enteredTimes == 0 {
             indexOfColorFlowMode += 1
             if indexOfColorFlowMode >= NUMBER_OF_COLORS_FLOW_MODE {
                 indexOfColorFlowMode = 0
@@ -597,26 +597,26 @@ class ViewController: UIViewController {
                 print("invalid index")
             }
         }
-        testColorChange += 1
+        enteredTimes += 1
         let limit = Int(fabsf(1.0 - flowSpeedSlider.value)*150+50)
         
-        if testColorChange >= (limit-10) {
+        if enteredTimes >= (limit-10) {
             let color1 = (userData?.arrayOfFlowModeColors[indexOfColorFlowMode])!
             let color2 = (userData?.arrayOfFlowModeColors[(indexOfColorFlowMode + 1)%4])!
             var colorValue:CGFloat = 0
             var br:Float = 0
-            if testColorChange < (limit-10+5) {
+            if enteredTimes < (limit-10+5) {
                 colorValue = CGFloat(color1)
-                br = 1.0 - 0.1 * Float(testColorChange - (limit - 11))
+                br = 1.0 - 0.1 * Float(enteredTimes - (limit - 11))
             }else{
                 colorValue = CGFloat(color2)
-                br = 1.0 - 0.1 * Float(limit + 1 - testColorChange)
+                br = 1.0 - 0.1 * Float(limit + 1 - enteredTimes)
             }
             let color = UIColor(hue: colorValue, saturation: 1.0, brightness: CGFloat(br), alpha: 1.0)
             self.view.backgroundColor = color
         }
-        if testColorChange == limit{
-            testColorChange = 0
+        if enteredTimes == limit{
+            enteredTimes = 0
         }
 
 //        indexOfColorFlowMode += 1
@@ -644,7 +644,7 @@ class ViewController: UIViewController {
             let speed = 0.06
             timerFlowMode.invalidate()
             timerFlowMode = Timer.scheduledTimer(timeInterval: TimeInterval(speed), target: self, selector: #selector(flowingColors), userInfo: nil, repeats: true)
-            testColorChange = 0
+            enteredTimes = 0
             indexOfColorFlowMode = 4
             flowingColors()
         }
