@@ -9,23 +9,23 @@
 import UIKit
 
 class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
-    let COLOR_PICKING_VIEW_HEIGHT = 150, TIMER_VIEW_HEIGHT = 180, FLOW_MODE_HEIGHT = 270
+    let COLOR_PICKING_VIEW_HEIGHT = 180, TIMER_VIEW_HEIGHT = 180, FLOW_MODE_HEIGHT = 300
+
     let NOT_ASSIGNED_VALUE = -1
     let NUMBER_OF_COLORS_FLOW_MODE = 4
     let COLOR_TAB = 0, TIMER_TAB = 1, FLOW_MODE_TAB = 2
     let DEFAULT_COLOR_VALUE:Float = 0.5
     let DEFAULT_TIMER_VALUE = 60
     let FIRST_COLOR_BUTTON_INDEX = 0, SECOND_COLOR_BUTTON_INDEX = 1, THIRD_COLOR_BUTTON_INDEX = 2, FOURTH_COLOR_BUTTON_INDEX = 3
+    let RECENTLY_USED_COLORS_MAX_COUNT = 5
+    let DEFAULT_COLOR = UIColor.orange
     
     var userData: UserData?
     var shutdownTimer: ShutdownTimer?
     var flowMode: FlowMode?
     
-    @IBOutlet var colorSlider: UISlider!
     @IBOutlet var brightnessSlider: UISlider!
     @IBOutlet var colorView: UIView!
-    @IBOutlet var blackButton: UIButton!
-    @IBOutlet var whiteButton: UIButton!
     @IBOutlet var choiceButtons: UISegmentedControl!
     @IBOutlet var colorViewHeight: NSLayoutConstraint!
     @IBOutlet var countDownTimer: UIDatePicker!
@@ -47,13 +47,23 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
     @IBOutlet weak var fourthColorPointer: UIImageView!
     @IBOutlet var startFlowModeButton: UIButton!
     
-    @IBOutlet weak var changeColorTest: UIButton!
+    @IBOutlet weak var colorPickerButton: UIButton!
+    @IBOutlet weak var recentlyUsedLabel: UILabel!
+    @IBOutlet weak var recentlyUsedColor1: UIButton!
+    @IBOutlet weak var recentlyUsedColor2: UIButton!
+    @IBOutlet weak var recentlyUsedColor3: UIButton!
+    @IBOutlet weak var recentlyUsedColor4: UIButton!
+    @IBOutlet weak var recentlyUsedColor5: UIButton!
+    @IBOutlet weak var recentlyUsedColorsView: UIView!
+    
     private var colorPicker = UIColorPickerViewController()
-    private var c = UIColor.black
+    private var arrayOfRecentlyUsedColorsButtons = [UIButton]()
     
     struct UserData {
-        var oneColorLight: Float
+        var oneColorLight: UIColor
         var arrayOfFlowModeColors = [Float]()
+        var arrayOfRecntlyUsedColors = [UIColor]()
+        var indexOfNextItemInRecently: Int
         var flowSpeed: Float
         var timerHours: Int
         var timerMinutes: Int
@@ -75,17 +85,37 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        arrayOfRecentlyUsedColorsButtons.append(recentlyUsedColor1)
+        arrayOfRecentlyUsedColorsButtons.append(recentlyUsedColor2)
+        arrayOfRecentlyUsedColorsButtons.append(recentlyUsedColor3)
+        arrayOfRecentlyUsedColorsButtons.append(recentlyUsedColor4)
+        arrayOfRecentlyUsedColorsButtons.append(recentlyUsedColor5)
+        
+        recentlyUsedColor1.backgroundColor = UIColor.black
+        recentlyUsedColor2.backgroundColor = UIColor.black
+        recentlyUsedColor3.backgroundColor = UIColor.black
+        recentlyUsedColor4.backgroundColor = UIColor.black
+        recentlyUsedColor5.backgroundColor = UIColor.black
+        recentlyUsedColor1.layer.cornerRadius = 10.0
+        recentlyUsedColor2.layer.cornerRadius = 10.0
+        recentlyUsedColor3.layer.cornerRadius = 10.0
+        recentlyUsedColor4.layer.cornerRadius = 10.0
+        recentlyUsedColor5.layer.cornerRadius = 10.0
+        
         colorPicker.delegate = self
-
+        
         //user data
         if userData == nil {
             var flowModeColors = [Float]()
+            var recentlyUsedColors = [UIColor]()
+            recentlyUsedColors.append(UIColor.orange)
             for _ in 1...4 {
                 flowModeColors.append(0.3)
             }
-            userData = UserData(oneColorLight: 0.6, arrayOfFlowModeColors: flowModeColors, flowSpeed: 0.6, timerHours: 1, timerMinutes: 30)
+            userData = UserData(oneColorLight: DEFAULT_COLOR, arrayOfFlowModeColors: flowModeColors, arrayOfRecntlyUsedColors: recentlyUsedColors, indexOfNextItemInRecently: 1, flowSpeed: 0.6, timerHours: 1, timerMinutes: 30)
         }
-        
+        self.view.backgroundColor = userData!.arrayOfRecntlyUsedColors[0]
+                
         //timer
         if shutdownTimer == nil {
             shutdownTimer = ShutdownTimer(hours: NOT_ASSIGNED_VALUE, minutes: NOT_ASSIGNED_VALUE, seconds: NOT_ASSIGNED_VALUE, timerBeforeExit: nil)
@@ -100,25 +130,12 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
         UIApplication.shared.isIdleTimerDisabled = true
         
         brightnessSlider.value = Float(UIScreen.main.brightness)
-        //setting slider value and background color
-        if userData != nil {
-            colorSlider.value = userData?.oneColorLight ?? DEFAULT_COLOR_VALUE
-        }else{
-            colorSlider.value = DEFAULT_COLOR_VALUE
-        }
-        let colorValue = CGFloat(colorSlider.value)
-        let color = UIColor(hue: colorValue, saturation: 1.0, brightness: 1.0, alpha: 1.0)
-        self.view.backgroundColor = color
         
         self.view.layoutIfNeeded()
         
         //setting color tab
         choiceButtons.selectedSegmentIndex = COLOR_TAB
         colorViewHeight.constant = CGFloat(COLOR_PICKING_VIEW_HEIGHT)
-        colorSlider.thumbTintColor = color
-        blackButton.backgroundColor = UIColor.black
-        whiteButton.backgroundColor = UIColor.white
-        changeColorTest.backgroundColor = UIColor.systemRed
         
         //setting timer tab values
         if userData != nil {
@@ -185,17 +202,70 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
         colorView.layer.cornerRadius = 15.0
         startButton.layer.cornerRadius = 15.0
         startFlowModeButton.layer.cornerRadius = 15.0
+        
+        showRecentlyUsedColors()
     }
-    @IBAction func changeColorActionTest(_ sender: Any) {
+    @IBAction func openColorPicker(_ sender: Any) {
         colorPicker.supportsAlpha = true
-        colorPicker.selectedColor = c
+        colorPicker.selectedColor = self.view.backgroundColor!
         present(colorPicker, animated: true)
         UIApplication.shared.statusBarStyle = .lightContent
     }
     
     func colorPickerViewControllerDidFinish(_ viewController: UIColorPickerViewController) {
-        //actions when Im closing picker
-        setStatusBarDependingBackgroundColorBrightness()
+        if viewController.selectedColor != self.view.backgroundColor {
+            if userData != nil {
+                if userData!.arrayOfRecntlyUsedColors.count < RECENTLY_USED_COLORS_MAX_COUNT {
+                    userData!.arrayOfRecntlyUsedColors.append(viewController.selectedColor)
+                }else{
+                    userData!.arrayOfRecntlyUsedColors[userData!.indexOfNextItemInRecently] = viewController.selectedColor
+                }
+                userData!.indexOfNextItemInRecently = (userData!.indexOfNextItemInRecently + 1) % RECENTLY_USED_COLORS_MAX_COUNT
+            }
+            self.view.backgroundColor = viewController.selectedColor
+            setStatusBarDependingBackgroundColorBrightness()
+            showRecentlyUsedColors()
+        }
+        
+
+    }
+    
+    func colorPickerViewControllerDidSelectColor(_ viewController: UIColorPickerViewController) {
+//        c = viewController.selectedColor
+//        self.view.backgroundColor = c
+    }
+    
+    func showRecentlyUsedColors() {
+        if userData != nil {
+            let count = userData!.arrayOfRecntlyUsedColors.count
+            if (count < 5) || (count == 5 && userData!.indexOfNextItemInRecently == 0) {
+                if count >= 1 {
+                    for i in (0...(count - 1)).reversed(){
+                        arrayOfRecentlyUsedColorsButtons[count - 1 - i].backgroundColor = userData!.arrayOfRecntlyUsedColors[i]
+                    }
+                }
+            }else{
+                var index = userData!.indexOfNextItemInRecently
+                for i in 0...4 {
+                    arrayOfRecentlyUsedColorsButtons[count - 1 - i].backgroundColor = userData!.arrayOfRecntlyUsedColors[index]
+                    index = (index + 1) % RECENTLY_USED_COLORS_MAX_COUNT
+                }
+            }
+        }
+        hideOrShowRecentlyUsedColorsButtons()
+    }
+    
+    func hideOrShowRecentlyUsedColorsButtons(){
+        if userData != nil {
+            let count = userData!.arrayOfRecntlyUsedColors.count
+            for i in 0...4 {
+                if i < count {
+                    arrayOfRecentlyUsedColorsButtons[i].isHidden = false
+                }else{
+                    arrayOfRecentlyUsedColorsButtons[i].isHidden = true
+                }
+            }
+        }
     }
     
     func setStatusBarDependingBackgroundColorBrightness(){
@@ -213,11 +283,6 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
             UIApplication.shared.statusBarStyle = .lightContent
         }
 
-    }
-    
-    func colorPickerViewControllerDidSelectColor(_ viewController: UIColorPickerViewController) {
-        c = viewController.selectedColor
-        self.view.backgroundColor = c
     }
     
     func setTimerTextLabel(){
@@ -248,9 +313,6 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        blackButton.layer.cornerRadius = 0.5 * blackButton.bounds.size.width
-        whiteButton.layer.cornerRadius = 0.5 * whiteButton.bounds.size.width
-        changeColorTest.layer.cornerRadius = 0.5 * changeColorTest.bounds.size.width
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -263,11 +325,6 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
         UIApplication.shared.isIdleTimerDisabled = true;
         
         colorView.backgroundColor = UIColor.lightGray
-        if traitCollection.userInterfaceStyle == .light {
-            colorSlider.maximumTrackTintColor = UIColor.black
-        } else {
-            colorSlider.maximumTrackTintColor = UIColor.white
-        }
     }
 
     @IBAction func tappedScreeen(_ sender: Any) {
@@ -287,41 +344,12 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
         UIScreen.main.brightness = CGFloat(brightnessSlider.value)
     }
     
-    @IBAction func sliderValueDidChange(_ sender: Any) {
-        let colorValue = CGFloat(colorSlider.value)
-        let color = UIColor(hue: colorValue, saturation: 1.0, brightness: 1.0, alpha: 1.0)
-        self.view.backgroundColor = color
-        colorSlider.thumbTintColor = color
-        if flowMode != nil {
-            if flowMode!.active == true {
-                flowMode!.active = false
-                flowMode!.timer?.invalidate()
-            }
-        }
-        setStatusBarDependingBackgroundColorBrightness()
-        //        UIApplication.shared.statusBarStyle = .darkContent
-    }
-    
-    @IBAction func blackButtonPressed(_ sender: Any) {
-        self.view.backgroundColor = UIColor.black
-        //setting status bar
-        setStatusBarDependingBackgroundColorBrightness()
-//        UIApplication.shared.statusBarStyle = .lightContent
-    }
-    
-    @IBAction func whiteButtonPressed(_ sender: Any) {
-//        UIApplication.shared.statusBarStyle = .darkContent
-        self.view.backgroundColor = UIColor.white
-        setStatusBarDependingBackgroundColorBrightness()
-    }
-    
     @IBAction func choiceChanged(_ sender: Any) {
         switch choiceButtons.selectedSegmentIndex {
         case COLOR_TAB:
-            colorSlider.isHidden = false
-            blackButton.isHidden = false
-            whiteButton.isHidden = false
-            changeColorTest.isHidden = false
+            recentlyUsedColorsView.isHidden = false
+            recentlyUsedLabel.isHidden = false
+            colorPickerButton.isHidden = false
             countDownTimer.isHidden = true
             startButton.isHidden = true
             timerView.isHidden = true
@@ -343,10 +371,9 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
             self.view.layoutIfNeeded()
             
         case TIMER_TAB:
-            changeColorTest.isHidden = true
-            colorSlider.isHidden = true
-            blackButton.isHidden = true
-            whiteButton.isHidden = true
+            recentlyUsedColorsView.isHidden = true
+            recentlyUsedLabel.isHidden = true
+            colorPickerButton.isHidden = true
             if shutdownTimer != nil {
                 if shutdownTimer!.seconds != NOT_ASSIGNED_VALUE && shutdownTimer!.minutes != NOT_ASSIGNED_VALUE && shutdownTimer!.hours != NOT_ASSIGNED_VALUE {
                     timerView.isHidden = false
@@ -374,10 +401,9 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
             self.view.layoutIfNeeded()
 
         case FLOW_MODE_TAB:
-            changeColorTest.isHidden = true
-            colorSlider.isHidden = true
-            blackButton.isHidden = true
-            whiteButton.isHidden = true
+            recentlyUsedColorsView.isHidden = true
+            recentlyUsedLabel.isHidden = true
+            colorPickerButton.isHidden = true
             countDownTimer.isHidden = true
             startButton.isHidden = true
             timerView.isHidden = true
@@ -621,9 +647,9 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
                 startFlowModeButton.tintColor = .systemGreen
                 flowMode!.active = false
                 flowMode!.timer?.invalidate()
-                let colorValue = CGFloat(colorSlider.value)
-                let color = UIColor(hue: colorValue, saturation: 1.0, brightness: 1.0, alpha: 1.0)
-                self.view.backgroundColor = color
+                if userData != nil {
+                    self.view.backgroundColor = userData!.oneColorLight
+                }
             }
         }
     }
@@ -703,28 +729,46 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
             }
         }
     }
-}
-
-extension UIColor {
-
-    // Check if the color is light or dark, as defined by the injected lightness threshold.
-    // Some people report that 0.7 is best. I suggest to find out for yourself.
-    // A nil value is returned if the lightness couldn't be determined.
-    func isLight(threshold: Float = 0.5) -> Bool? {
-        let originalCGColor = self.cgColor
-
-        // Now we need to convert it to the RGB colorspace. UIColor.white / UIColor.black are greyscale and not RGB.
-        // If you don't do this then you will crash when accessing components index 2 below when evaluating greyscale colors.
-        let RGBCGColor = originalCGColor.converted(to: CGColorSpaceCreateDeviceRGB(), intent: .defaultIntent, options: nil)
-        guard let components = RGBCGColor?.components else {
-            return nil
+    @IBAction func recentlyUsedColorButton1Pressed(_ sender: Any) {
+        self.view.backgroundColor = arrayOfRecentlyUsedColorsButtons[0].backgroundColor
+        setStatusBarDependingBackgroundColorBrightness()
+        if userData != nil {
+            userData!.oneColorLight = arrayOfRecentlyUsedColorsButtons[0].backgroundColor!
         }
-        guard components.count >= 3 else {
-            return nil
-        }
-
-        let brightness = Float(((components[0] * 299) + (components[1] * 587) + (components[2] * 114)) / 1000)
-        return (brightness > threshold)
     }
+    @IBAction func recentlyUsedColorButton2Pressed(_ sender: Any) {
+        self.view.backgroundColor = arrayOfRecentlyUsedColorsButtons[1].backgroundColor
+        setStatusBarDependingBackgroundColorBrightness()
+        if userData != nil {
+            userData!.oneColorLight = arrayOfRecentlyUsedColorsButtons[1].backgroundColor!
+        }
+    }
+    @IBAction func recentlyUsedColorButton3Pressed(_ sender: Any) {
+        self.view.backgroundColor = arrayOfRecentlyUsedColorsButtons[2].backgroundColor
+        setStatusBarDependingBackgroundColorBrightness()
+        if userData != nil {
+            userData!.oneColorLight = arrayOfRecentlyUsedColorsButtons[2].backgroundColor!
+        }
+    }
+    @IBAction func recentlyUsedColorButton4Pressed(_ sender: Any) {
+        self.view.backgroundColor = arrayOfRecentlyUsedColorsButtons[3].backgroundColor
+        setStatusBarDependingBackgroundColorBrightness()
+        if userData != nil {
+            userData!.oneColorLight = arrayOfRecentlyUsedColorsButtons[3].backgroundColor!
+        }
+    }
+    @IBAction func recentlyUsedColorButton5Pressed(_ sender: Any) {
+        self.view.backgroundColor = arrayOfRecentlyUsedColorsButtons[4].backgroundColor
+        setStatusBarDependingBackgroundColorBrightness()
+        if userData != nil {
+            userData!.oneColorLight = arrayOfRecentlyUsedColorsButtons[4].backgroundColor!
+        }
+    }
+    
+    @IBAction func openColorpickerFlowMode(_ sender: Any) {
+    }
+    
 }
+
+
 
