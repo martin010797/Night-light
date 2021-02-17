@@ -19,9 +19,12 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
     let FIRST_COLOR_BUTTON_INDEX = 0, SECOND_COLOR_BUTTON_INDEX = 1, THIRD_COLOR_BUTTON_INDEX = 2, FOURTH_COLOR_BUTTON_INDEX = 3
     let RECENTLY_USED_COLORS_MAX_COUNT = 5
     let DEFAULT_COLOR = UIColor.orange
+    let DEFAULT_TIMER_HOURS = 1
+    let DEFAULT_TIMER_MINUTES = 30
     let ONE_COLOR_LIGHT_KEY = "ONE_COLOR_LIGHT"
     let RECENTLY_USED_COLORS_KEY = "RECENTLY_USED_COLORS_KEY"
     let INDEX_OF_NEXT_ITEM_IN_RECENTLY_KEY = "INDEX_OF_NEXT_ITEM_IN_RECENTLY_KEY"
+    let TIMER_KEY = "TIMER_KEY"
     
     var userData: UserData?
     var shutdownTimer: ShutdownTimer?
@@ -134,12 +137,19 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
                 retrievedIndex = retrievedRecentlyUsedColors.count
                 defaults.set(retrievedIndex, forKey: INDEX_OF_NEXT_ITEM_IN_RECENTLY_KEY)
             }
+            //getting timer values
+            var retrievedTimer = defaults.object(forKey: TIMER_KEY) as? [Int] ?? [Int]()
+            if retrievedTimer.count == 0 {
+                retrievedTimer.append(DEFAULT_TIMER_HOURS)
+                retrievedTimer.append(DEFAULT_TIMER_MINUTES)
+                defaults.set(retrievedTimer, forKey: TIMER_KEY)
+            }
             
             var flowModeColors = [UIColor]()
             for _ in 1...4 {
                 flowModeColors.append(DEFAULT_COLOR)
             }
-            userData = UserData(oneColorLight: retrievedColor, arrayOfFlowModeColors: flowModeColors, arrayOfRecntlyUsedColors: retrievedRecentlyUsedColors, indexOfNextItemInRecently: retrievedIndex, flowSpeed: 0.6, timerHours: 1, timerMinutes: 30)
+            userData = UserData(oneColorLight: retrievedColor, arrayOfFlowModeColors: flowModeColors, arrayOfRecntlyUsedColors: retrievedRecentlyUsedColors, indexOfNextItemInRecently: retrievedIndex, flowSpeed: 0.6, timerHours: retrievedTimer[0], timerMinutes: retrievedTimer[1])
         }
         self.view.backgroundColor = userData!.oneColorLight
         setStatusBarDependingBackgroundColorBrightness()
@@ -227,10 +237,6 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
         startFlowModeButton.layer.cornerRadius = 15.0
         
         showRecentlyUsedColors()
-    }
-    
-    func convertArrayToDataArray(){
-        
     }
     
     @IBAction func openColorPicker(_ sender: Any) {
@@ -334,7 +340,6 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
         }else{
             UIApplication.shared.statusBarStyle = .lightContent
         }
-
     }
     
     func setTimerTextLabel(){
@@ -361,6 +366,16 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
         }else{
             timerLabel.text = "Not available"
         }
+    }
+    
+    
+    @IBAction func countDownTimerValueChanged(_ sender: Any) {
+        let hours = Int(countDownTimer.countDownDuration/60/60)
+        let minutes = (Int(countDownTimer.countDownDuration) - Int(hours * 60 * 60))/60
+        var arrayOfTimerData = [Int]()
+        arrayOfTimerData.append(hours)
+        arrayOfTimerData.append(minutes)
+        defaults.set(arrayOfTimerData, forKey: TIMER_KEY)
     }
     
     override func viewDidLayoutSubviews() {
