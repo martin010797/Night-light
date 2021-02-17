@@ -21,10 +21,13 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
     let DEFAULT_COLOR = UIColor.orange
     let DEFAULT_TIMER_HOURS = 1
     let DEFAULT_TIMER_MINUTES = 30
+    let DEFAULT_FLOW_SPEED = 0.5
     let ONE_COLOR_LIGHT_KEY = "ONE_COLOR_LIGHT"
     let RECENTLY_USED_COLORS_KEY = "RECENTLY_USED_COLORS_KEY"
     let INDEX_OF_NEXT_ITEM_IN_RECENTLY_KEY = "INDEX_OF_NEXT_ITEM_IN_RECENTLY_KEY"
     let TIMER_KEY = "TIMER_KEY"
+    let FLOW_SPEED_KEY = "FLOW_SPEED_KEY"
+    let FLOW_MODE_COLORS_KEY = "FLOW_MODE_COLORS_KEY"
     
     var userData: UserData?
     var shutdownTimer: ShutdownTimer?
@@ -119,7 +122,7 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
         
         //user data
         if userData == nil {
-//            defaults.removeObject(forKey: ONE_COLOR_LIGHT_KEY)
+            //cele nacitavanie dat by mala byt zrejme samostatna metoda TODO
             //getting one color data
             let retrievedColor = defaults.colorItemForKey(key: ONE_COLOR_LIGHT_KEY) as? UIColor ?? DEFAULT_COLOR
             if retrievedColor == DEFAULT_COLOR{
@@ -144,12 +147,25 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
                 retrievedTimer.append(DEFAULT_TIMER_MINUTES)
                 defaults.set(retrievedTimer, forKey: TIMER_KEY)
             }
+            //getting flow speed value
+            let retrievedFlowSpeed = defaults.float(forKey: FLOW_SPEED_KEY)
+            if retrievedFlowSpeed == 0.0 {
+                defaults.set(retrievedFlowSpeed, forKey: FLOW_SPEED_KEY)
+            }
+            //getting flow mode colors
+            var retrievedFlowModeColors = defaults.colorItemForKey(key: FLOW_MODE_COLORS_KEY) as? [UIColor] ?? [UIColor]()
+            if retrievedFlowModeColors.count == 0 {
+                for _ in 1...4 {
+                    retrievedFlowModeColors.append(DEFAULT_COLOR)
+                }
+                defaults.setColorItem(item: retrievedFlowModeColors, forKey: FLOW_MODE_COLORS_KEY)
+            }
             
             var flowModeColors = [UIColor]()
             for _ in 1...4 {
                 flowModeColors.append(DEFAULT_COLOR)
             }
-            userData = UserData(oneColorLight: retrievedColor, arrayOfFlowModeColors: flowModeColors, arrayOfRecntlyUsedColors: retrievedRecentlyUsedColors, indexOfNextItemInRecently: retrievedIndex, flowSpeed: 0.6, timerHours: retrievedTimer[0], timerMinutes: retrievedTimer[1])
+            userData = UserData(oneColorLight: retrievedColor, arrayOfFlowModeColors: retrievedFlowModeColors, arrayOfRecntlyUsedColors: retrievedRecentlyUsedColors, indexOfNextItemInRecently: retrievedIndex, flowSpeed: retrievedFlowSpeed, timerHours: retrievedTimer[0], timerMinutes: retrievedTimer[1])
         }
         self.view.backgroundColor = userData!.oneColorLight
         setStatusBarDependingBackgroundColorBrightness()
@@ -218,6 +234,7 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
             secondColorFMButton.backgroundColor = colors[1]
             thirdColorFMButton.backgroundColor = colors[2]
             fourthColorFMButton.backgroundColor = colors[3]
+            flowSpeedSlider.value = userData!.flowSpeed
         }else{
             let defColor = UIColor(hue: CGFloat(DEFAULT_COLOR_VALUE), saturation: 1.0, brightness: 1.0, alpha: 1.0)
             firstColorFMButton.backgroundColor = defColor
@@ -284,6 +301,7 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
         }else{
             if userData != nil && flowMode != nil {
                 userData!.arrayOfFlowModeColors[flowMode!.changedColorIndex] = viewController.selectedColor
+                defaults.setColorItem(item: userData!.arrayOfFlowModeColors, forKey: FLOW_MODE_COLORS_KEY)
             }
             arrayOfFlowModeColorsButtons[flowMode!.changedColorIndex].backgroundColor = viewController.selectedColor
         }
@@ -694,6 +712,7 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
                 flowingColors()
             }
         }
+        defaults.set(flowSpeedSlider.value, forKey: FLOW_SPEED_KEY)
     }
     @IBAction func recentlyUsedColorButton1Pressed(_ sender: Any) {
         self.view.backgroundColor = arrayOfRecentlyUsedColorsButtons[0].backgroundColor
