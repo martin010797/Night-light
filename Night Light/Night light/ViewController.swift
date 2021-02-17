@@ -19,6 +19,9 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
     let FIRST_COLOR_BUTTON_INDEX = 0, SECOND_COLOR_BUTTON_INDEX = 1, THIRD_COLOR_BUTTON_INDEX = 2, FOURTH_COLOR_BUTTON_INDEX = 3
     let RECENTLY_USED_COLORS_MAX_COUNT = 5
     let DEFAULT_COLOR = UIColor.orange
+    let ONE_COLOR_LIGHT_KEY = "ONE_COLOR_LIGHT"
+    let RECENTLY_USED_COLORS_KEY = "RECENTLY_USED_COLORS_KEY"
+    let INDEX_OF_NEXT_ITEM_IN_RECENTLY_KEY = "INDEX_OF_NEXT_ITEM_IN_RECENTLY_KEY"
     
     var userData: UserData?
     var shutdownTimer: ShutdownTimer?
@@ -59,6 +62,7 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
     var colorPicker = UIColorPickerViewController()
     var arrayOfRecentlyUsedColorsButtons = [UIButton]()
     var arrayOfFlowModeColorsButtons = [UIButton]()
+    let defaults = UserDefaults.standard
     
     struct UserData {
         var oneColorLight: UIColor
@@ -85,7 +89,7 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         arrayOfFlowModeColorsButtons.append(firstColorFMButton)
         arrayOfFlowModeColorsButtons.append(secondColorFMButton)
         arrayOfFlowModeColorsButtons.append(thirdColorFMButton)
@@ -112,15 +116,33 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
         
         //user data
         if userData == nil {
+//            defaults.removeObject(forKey: ONE_COLOR_LIGHT_KEY)
+            //getting one color data
+            let retrievedColor = defaults.colorItemForKey(key: ONE_COLOR_LIGHT_KEY) as? UIColor ?? DEFAULT_COLOR
+            if retrievedColor == DEFAULT_COLOR{
+                defaults.setColorItem(item: DEFAULT_COLOR, forKey: ONE_COLOR_LIGHT_KEY)
+            }
+            //getting recently used colors
+            var retrievedRecentlyUsedColors = defaults.colorItemForKey(key: RECENTLY_USED_COLORS_KEY) as? [UIColor] ?? [UIColor]()
+            if retrievedRecentlyUsedColors.count == 0 {
+                retrievedRecentlyUsedColors.append(retrievedColor)
+                defaults.setColorItem(item: retrievedRecentlyUsedColors, forKey: RECENTLY_USED_COLORS_KEY)
+            }
+            //getting index of recently used colors next item
+            var retrievedIndex = defaults.integer(forKey: INDEX_OF_NEXT_ITEM_IN_RECENTLY_KEY)
+            if retrievedIndex == 0 && retrievedRecentlyUsedColors.count < RECENTLY_USED_COLORS_MAX_COUNT {
+                retrievedIndex = retrievedRecentlyUsedColors.count
+                defaults.set(retrievedIndex, forKey: INDEX_OF_NEXT_ITEM_IN_RECENTLY_KEY)
+            }
+            
             var flowModeColors = [UIColor]()
-            var recentlyUsedColors = [UIColor]()
-            recentlyUsedColors.append(UIColor.orange)
             for _ in 1...4 {
                 flowModeColors.append(DEFAULT_COLOR)
             }
-            userData = UserData(oneColorLight: DEFAULT_COLOR, arrayOfFlowModeColors: flowModeColors, arrayOfRecntlyUsedColors: recentlyUsedColors, indexOfNextItemInRecently: 1, flowSpeed: 0.6, timerHours: 1, timerMinutes: 30)
+            userData = UserData(oneColorLight: retrievedColor, arrayOfFlowModeColors: flowModeColors, arrayOfRecntlyUsedColors: retrievedRecentlyUsedColors, indexOfNextItemInRecently: retrievedIndex, flowSpeed: 0.6, timerHours: 1, timerMinutes: 30)
         }
-        self.view.backgroundColor = userData!.arrayOfRecntlyUsedColors[0]
+        self.view.backgroundColor = userData!.oneColorLight
+        setStatusBarDependingBackgroundColorBrightness()
                 
         //timer
         if shutdownTimer == nil {
@@ -206,11 +228,32 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
         
         showRecentlyUsedColors()
     }
+    
+    func convertArrayToDataArray(){
+        
+    }
+    
     @IBAction func openColorPicker(_ sender: Any) {
+        stopFlowMode()
         colorPicker.supportsAlpha = false
         colorPicker.selectedColor = self.view.backgroundColor!
         present(colorPicker, animated: true)
         UIApplication.shared.statusBarStyle = .lightContent
+    }
+    
+    func stopFlowMode(){
+        if flowMode != nil {
+            if flowMode!.active == true {
+                startFlowModeButton.setImage(UIImage(systemName: "play.fill"), for: UIControl.State.normal)
+                startFlowModeButton.tintColor = .systemGreen
+                flowMode!.active = false
+                flowMode!.timer?.invalidate()
+                if userData != nil {
+                    self.view.backgroundColor = userData!.oneColorLight
+                    setStatusBarDependingBackgroundColorBrightness()
+                }
+            }
+        }
     }
     
     func colorPickerViewControllerDidFinish(_ viewController: UIColorPickerViewController) {
@@ -223,11 +266,14 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
                         userData!.arrayOfRecntlyUsedColors[userData!.indexOfNextItemInRecently] = viewController.selectedColor
                     }
                     userData!.indexOfNextItemInRecently = (userData!.indexOfNextItemInRecently + 1) % RECENTLY_USED_COLORS_MAX_COUNT
+                    defaults.set(userData!.indexOfNextItemInRecently, forKey: INDEX_OF_NEXT_ITEM_IN_RECENTLY_KEY)
                     userData!.oneColorLight = viewController.selectedColor
+                    defaults.setColorItem(item: userData!.arrayOfRecntlyUsedColors, forKey: RECENTLY_USED_COLORS_KEY)
                 }
                 self.view.backgroundColor = viewController.selectedColor
                 setStatusBarDependingBackgroundColorBrightness()
                 showRecentlyUsedColors()
+                defaults.setColorItem(item: viewController.selectedColor, forKey: ONE_COLOR_LIGHT_KEY)
             }
         }else{
             if userData != nil && flowMode != nil {
@@ -572,14 +618,7 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
                 flowMode!.indexOfColor = 4
                 flowingColors()
             }else{
-                startFlowModeButton.setImage(UIImage(systemName: "play.fill"), for: UIControl.State.normal)
-                startFlowModeButton.tintColor = .systemGreen
-                flowMode!.active = false
-                flowMode!.timer?.invalidate()
-                if userData != nil {
-                    self.view.backgroundColor = userData!.oneColorLight
-                    setStatusBarDependingBackgroundColorBrightness()
-                }
+                stopFlowMode()
             }
         }
     }
@@ -647,7 +686,9 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
         if userData != nil {
             userData!.oneColorLight = arrayOfRecentlyUsedColorsButtons[0].backgroundColor!
         }
-        startButtonFlowModePressed(self)
+        stopFlowMode()
+        defaults.setColorItem(item: arrayOfRecentlyUsedColorsButtons[0].backgroundColor, forKey: ONE_COLOR_LIGHT_KEY)
+
     }
     @IBAction func recentlyUsedColorButton2Pressed(_ sender: Any) {
         self.view.backgroundColor = arrayOfRecentlyUsedColorsButtons[1].backgroundColor
@@ -655,7 +696,8 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
         if userData != nil {
             userData!.oneColorLight = arrayOfRecentlyUsedColorsButtons[1].backgroundColor!
         }
-        startButtonFlowModePressed(self)
+        stopFlowMode()
+        defaults.setColorItem(item: arrayOfRecentlyUsedColorsButtons[1].backgroundColor, forKey: ONE_COLOR_LIGHT_KEY)
     }
     @IBAction func recentlyUsedColorButton3Pressed(_ sender: Any) {
         self.view.backgroundColor = arrayOfRecentlyUsedColorsButtons[2].backgroundColor
@@ -663,7 +705,8 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
         if userData != nil {
             userData!.oneColorLight = arrayOfRecentlyUsedColorsButtons[2].backgroundColor!
         }
-        startButtonFlowModePressed(self)
+        stopFlowMode()
+        defaults.setColorItem(item: arrayOfRecentlyUsedColorsButtons[2].backgroundColor, forKey: ONE_COLOR_LIGHT_KEY)
     }
     @IBAction func recentlyUsedColorButton4Pressed(_ sender: Any) {
         self.view.backgroundColor = arrayOfRecentlyUsedColorsButtons[3].backgroundColor
@@ -671,7 +714,8 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
         if userData != nil {
             userData!.oneColorLight = arrayOfRecentlyUsedColorsButtons[3].backgroundColor!
         }
-        startButtonFlowModePressed(self)
+        stopFlowMode()
+        defaults.setColorItem(item: arrayOfRecentlyUsedColorsButtons[3].backgroundColor, forKey: ONE_COLOR_LIGHT_KEY)
     }
     @IBAction func recentlyUsedColorButton5Pressed(_ sender: Any) {
         self.view.backgroundColor = arrayOfRecentlyUsedColorsButtons[4].backgroundColor
@@ -679,7 +723,8 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
         if userData != nil {
             userData!.oneColorLight = arrayOfRecentlyUsedColorsButtons[4].backgroundColor!
         }
-        startButtonFlowModePressed(self)
+        stopFlowMode()
+        defaults.setColorItem(item: arrayOfRecentlyUsedColorsButtons[4].backgroundColor, forKey: ONE_COLOR_LIGHT_KEY)
     }
     
     @IBAction func openColorpickerFlowMode(_ sender: Any) {
@@ -710,6 +755,34 @@ extension UIColor {
         } else {
             return self
         }
+    }
+}
+
+extension UserDefaults {
+    func colorItemForKey(key: String) -> Any? {
+        var colorReturnded: Any?
+        if let colorData = data(forKey: key) {
+            do {
+                if let color = try NSKeyedUnarchiver.unarchiveTopLevelObjectWithData(colorData) {
+                    colorReturnded = color
+                }
+            } catch {
+                print("Error with getting color")
+            }
+        }
+        return colorReturnded
+    }
+    func setColorItem(item: Any?, forKey key: String){
+        var colorData: NSData?
+        if let item = item {
+            do {
+                let data = try NSKeyedArchiver.archivedData(withRootObject: item, requiringSecureCoding: false) as NSData?
+                colorData = data
+            } catch {
+                print("Error with saving color")
+            }
+        }
+        set(colorData, forKey: key)
     }
 }
 
