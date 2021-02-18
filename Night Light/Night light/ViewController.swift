@@ -6,29 +6,29 @@
 //  Copyright © 2020 Martin Kostelej. All rights reserved.
 //
 
+let COLOR_PICKING_VIEW_HEIGHT = 180, TIMER_VIEW_HEIGHT = 180, FLOW_MODE_HEIGHT = 270
+
+let NOT_ASSIGNED_VALUE = -1
+let NUMBER_OF_COLORS_FLOW_MODE = 4
+let COLOR_TAB = 0, TIMER_TAB = 1, FLOW_MODE_TAB = 2
+let DEFAULT_COLOR_VALUE:Float = 0.5
+let DEFAULT_TIMER_VALUE = 60
+let FIRST_COLOR_BUTTON_INDEX = 0, SECOND_COLOR_BUTTON_INDEX = 1, THIRD_COLOR_BUTTON_INDEX = 2, FOURTH_COLOR_BUTTON_INDEX = 3
+let RECENTLY_USED_COLORS_MAX_COUNT = 5
+let DEFAULT_COLOR = UIColor.orange
+let DEFAULT_TIMER_HOURS = 1
+let DEFAULT_TIMER_MINUTES = 30
+let DEFAULT_FLOW_SPEED = 0.5
+let ONE_COLOR_LIGHT_KEY = "ONE_COLOR_LIGHT"
+let RECENTLY_USED_COLORS_KEY = "RECENTLY_USED_COLORS_KEY"
+let INDEX_OF_NEXT_ITEM_IN_RECENTLY_KEY = "INDEX_OF_NEXT_ITEM_IN_RECENTLY_KEY"
+let TIMER_KEY = "TIMER_KEY"
+let FLOW_SPEED_KEY = "FLOW_SPEED_KEY"
+let FLOW_MODE_COLORS_KEY = "FLOW_MODE_COLORS_KEY"
+
 import UIKit
 
 class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
-    let COLOR_PICKING_VIEW_HEIGHT = 180, TIMER_VIEW_HEIGHT = 180, FLOW_MODE_HEIGHT = 270
-
-    let NOT_ASSIGNED_VALUE = -1
-    let NUMBER_OF_COLORS_FLOW_MODE = 4
-    let COLOR_TAB = 0, TIMER_TAB = 1, FLOW_MODE_TAB = 2
-    let DEFAULT_COLOR_VALUE:Float = 0.5
-    let DEFAULT_TIMER_VALUE = 60
-    let FIRST_COLOR_BUTTON_INDEX = 0, SECOND_COLOR_BUTTON_INDEX = 1, THIRD_COLOR_BUTTON_INDEX = 2, FOURTH_COLOR_BUTTON_INDEX = 3
-    let RECENTLY_USED_COLORS_MAX_COUNT = 5
-    let DEFAULT_COLOR = UIColor.orange
-    let DEFAULT_TIMER_HOURS = 1
-    let DEFAULT_TIMER_MINUTES = 30
-    let DEFAULT_FLOW_SPEED = 0.5
-    let ONE_COLOR_LIGHT_KEY = "ONE_COLOR_LIGHT"
-    let RECENTLY_USED_COLORS_KEY = "RECENTLY_USED_COLORS_KEY"
-    let INDEX_OF_NEXT_ITEM_IN_RECENTLY_KEY = "INDEX_OF_NEXT_ITEM_IN_RECENTLY_KEY"
-    let TIMER_KEY = "TIMER_KEY"
-    let FLOW_SPEED_KEY = "FLOW_SPEED_KEY"
-    let FLOW_MODE_COLORS_KEY = "FLOW_MODE_COLORS_KEY"
-    
     var userData: UserData?
     var shutdownTimer: ShutdownTimer?
     var flowMode: FlowMode?
@@ -74,20 +74,68 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
     let defaults = UserDefaults.standard
     
     struct UserData {
-        var oneColorLight: UIColor
+        var oneColorLight: UIColor = UIColor()
         var arrayOfFlowModeColors = [UIColor]()
         var arrayOfRecntlyUsedColors = [UIColor]()
-        var indexOfNextItemInRecently: Int
-        var flowSpeed: Float
-        var timerHours: Int
-        var timerMinutes: Int
+        var indexOfNextItemInRecently: Int = Int()
+        var flowSpeed: Float = Float()
+        var timerHours: Int = Int()
+        var timerMinutes: Int = Int()
+        init() {
+            //getting one color data
+            let retrievedColor = UserDefaults.standard.colorItemForKey(key: ONE_COLOR_LIGHT_KEY) as? UIColor ?? DEFAULT_COLOR
+            if retrievedColor == DEFAULT_COLOR{
+                UserDefaults.standard.setColorItem(item: DEFAULT_COLOR, forKey: ONE_COLOR_LIGHT_KEY)
+            }
+            //getting recently used colors
+            var retrievedRecentlyUsedColors = UserDefaults.standard.colorItemForKey(key: RECENTLY_USED_COLORS_KEY) as? [UIColor] ?? [UIColor]()
+            if retrievedRecentlyUsedColors.count == 0 {
+                retrievedRecentlyUsedColors.append(retrievedColor)
+                UserDefaults.standard.setColorItem(item: retrievedRecentlyUsedColors, forKey: RECENTLY_USED_COLORS_KEY)
+            }
+            //getting index of recently used colors next item
+            var retrievedIndex = UserDefaults.standard.integer(forKey: INDEX_OF_NEXT_ITEM_IN_RECENTLY_KEY)
+            if retrievedIndex == 0 && retrievedRecentlyUsedColors.count < RECENTLY_USED_COLORS_MAX_COUNT {
+                retrievedIndex = retrievedRecentlyUsedColors.count
+                UserDefaults.standard.set(retrievedIndex, forKey: INDEX_OF_NEXT_ITEM_IN_RECENTLY_KEY)
+            }
+            //getting timer values
+            var retrievedTimer = UserDefaults.standard.object(forKey: TIMER_KEY) as? [Int] ?? [Int]()
+            if retrievedTimer.count == 0 {
+                retrievedTimer.append(DEFAULT_TIMER_HOURS)
+                retrievedTimer.append(DEFAULT_TIMER_MINUTES)
+                UserDefaults.standard.set(retrievedTimer, forKey: TIMER_KEY)
+            }
+            //getting flow speed value
+            let retrievedFlowSpeed = UserDefaults.standard.float(forKey: FLOW_SPEED_KEY)
+            if retrievedFlowSpeed == 0.0 {
+                UserDefaults.standard.set(retrievedFlowSpeed, forKey: FLOW_SPEED_KEY)
+            }
+            //getting flow mode colors
+            var retrievedFlowModeColors = UserDefaults.standard.colorItemForKey(key: FLOW_MODE_COLORS_KEY) as? [UIColor] ?? [UIColor]()
+            if retrievedFlowModeColors.count == 0 {
+                for _ in 1...4 {
+                    retrievedFlowModeColors.append(DEFAULT_COLOR)
+                }
+                UserDefaults.standard.setColorItem(item: retrievedFlowModeColors, forKey: FLOW_MODE_COLORS_KEY)
+            }
+            oneColorLight = retrievedColor
+            arrayOfFlowModeColors = retrievedFlowModeColors
+            arrayOfRecntlyUsedColors = retrievedRecentlyUsedColors
+            indexOfNextItemInRecently = retrievedIndex
+            flowSpeed = retrievedFlowSpeed
+            timerHours = retrievedTimer[0]
+            timerMinutes = retrievedTimer[1]
+        }
     }
+    
     struct ShutdownTimer {
         var hours: Int
         var minutes: Int
         var seconds: Int
         var timerBeforeExit: Timer?
     }
+    
     struct FlowMode {
         var changedColorIndex: Int
         var active: Bool
@@ -99,80 +147,28 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        arrayOfFlowModeColorsButtons.append(firstColorFMButton)
-        arrayOfFlowModeColorsButtons.append(secondColorFMButton)
-        arrayOfFlowModeColorsButtons.append(thirdColorFMButton)
-        arrayOfFlowModeColorsButtons.append(fourthColorFMButton)
+        if arrayOfFlowModeColorsButtons.count == 0 {
+            arrayOfFlowModeColorsButtons.append(firstColorFMButton)
+            arrayOfFlowModeColorsButtons.append(secondColorFMButton)
+            arrayOfFlowModeColorsButtons.append(thirdColorFMButton)
+            arrayOfFlowModeColorsButtons.append(fourthColorFMButton)
+        }
         
-        arrayOfRecentlyUsedColorsButtons.append(recentlyUsedColor1)
-        arrayOfRecentlyUsedColorsButtons.append(recentlyUsedColor2)
-        arrayOfRecentlyUsedColorsButtons.append(recentlyUsedColor3)
-        arrayOfRecentlyUsedColorsButtons.append(recentlyUsedColor4)
-        arrayOfRecentlyUsedColorsButtons.append(recentlyUsedColor5)
-        
-        recentlyUsedColor1.backgroundColor = UIColor.black
-        recentlyUsedColor2.backgroundColor = UIColor.black
-        recentlyUsedColor3.backgroundColor = UIColor.black
-        recentlyUsedColor4.backgroundColor = UIColor.black
-        recentlyUsedColor5.backgroundColor = UIColor.black
-        recentlyUsedColor1.layer.cornerRadius = 10.0
-        recentlyUsedColor2.layer.cornerRadius = 10.0
-        recentlyUsedColor3.layer.cornerRadius = 10.0
-        recentlyUsedColor4.layer.cornerRadius = 10.0
-        recentlyUsedColor5.layer.cornerRadius = 10.0
+        if arrayOfRecentlyUsedColorsButtons.count == 0 {
+            arrayOfRecentlyUsedColorsButtons.append(recentlyUsedColor1)
+            arrayOfRecentlyUsedColorsButtons.append(recentlyUsedColor2)
+            arrayOfRecentlyUsedColorsButtons.append(recentlyUsedColor3)
+            arrayOfRecentlyUsedColorsButtons.append(recentlyUsedColor4)
+            arrayOfRecentlyUsedColorsButtons.append(recentlyUsedColor5)
+        }
         
         colorPicker.delegate = self
         
         //user data
         if userData == nil {
-            //cele nacitavanie dat by mala byt zrejme samostatna metoda TODO
-            //getting one color data
-            let retrievedColor = defaults.colorItemForKey(key: ONE_COLOR_LIGHT_KEY) as? UIColor ?? DEFAULT_COLOR
-            if retrievedColor == DEFAULT_COLOR{
-                defaults.setColorItem(item: DEFAULT_COLOR, forKey: ONE_COLOR_LIGHT_KEY)
-            }
-            //getting recently used colors
-            var retrievedRecentlyUsedColors = defaults.colorItemForKey(key: RECENTLY_USED_COLORS_KEY) as? [UIColor] ?? [UIColor]()
-            if retrievedRecentlyUsedColors.count == 0 {
-                retrievedRecentlyUsedColors.append(retrievedColor)
-                defaults.setColorItem(item: retrievedRecentlyUsedColors, forKey: RECENTLY_USED_COLORS_KEY)
-            }
-            //getting index of recently used colors next item
-            var retrievedIndex = defaults.integer(forKey: INDEX_OF_NEXT_ITEM_IN_RECENTLY_KEY)
-            if retrievedIndex == 0 && retrievedRecentlyUsedColors.count < RECENTLY_USED_COLORS_MAX_COUNT {
-                retrievedIndex = retrievedRecentlyUsedColors.count
-                defaults.set(retrievedIndex, forKey: INDEX_OF_NEXT_ITEM_IN_RECENTLY_KEY)
-            }
-            //getting timer values
-            var retrievedTimer = defaults.object(forKey: TIMER_KEY) as? [Int] ?? [Int]()
-            if retrievedTimer.count == 0 {
-                retrievedTimer.append(DEFAULT_TIMER_HOURS)
-                retrievedTimer.append(DEFAULT_TIMER_MINUTES)
-                defaults.set(retrievedTimer, forKey: TIMER_KEY)
-            }
-            //getting flow speed value
-            let retrievedFlowSpeed = defaults.float(forKey: FLOW_SPEED_KEY)
-            if retrievedFlowSpeed == 0.0 {
-                defaults.set(retrievedFlowSpeed, forKey: FLOW_SPEED_KEY)
-            }
-            //getting flow mode colors
-            var retrievedFlowModeColors = defaults.colorItemForKey(key: FLOW_MODE_COLORS_KEY) as? [UIColor] ?? [UIColor]()
-            if retrievedFlowModeColors.count == 0 {
-                for _ in 1...4 {
-                    retrievedFlowModeColors.append(DEFAULT_COLOR)
-                }
-                defaults.setColorItem(item: retrievedFlowModeColors, forKey: FLOW_MODE_COLORS_KEY)
-            }
-            
-            var flowModeColors = [UIColor]()
-            for _ in 1...4 {
-                flowModeColors.append(DEFAULT_COLOR)
-            }
-            userData = UserData(oneColorLight: retrievedColor, arrayOfFlowModeColors: retrievedFlowModeColors, arrayOfRecntlyUsedColors: retrievedRecentlyUsedColors, indexOfNextItemInRecently: retrievedIndex, flowSpeed: retrievedFlowSpeed, timerHours: retrievedTimer[0], timerMinutes: retrievedTimer[1])
+            userData = UserData()
         }
-        self.view.backgroundColor = userData!.oneColorLight
-        setStatusBarDependingBackgroundColorBrightness()
-                
+        
         //timer
         if shutdownTimer == nil {
             shutdownTimer = ShutdownTimer(hours: NOT_ASSIGNED_VALUE, minutes: NOT_ASSIGNED_VALUE, seconds: NOT_ASSIGNED_VALUE, timerBeforeExit: nil)
@@ -187,12 +183,20 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
         UIApplication.shared.isIdleTimerDisabled = true
         
         brightnessSlider.value = Float(UIScreen.main.brightness)
+                
+        //rotating pointers for colors
+        firstColorPointer.transform = CGAffineTransform(rotationAngle: CGFloat(Float.pi))
+        secondColorPointer.transform = CGAffineTransform(rotationAngle: CGFloat(Float.pi))
+        thirdColorPointer.transform = CGAffineTransform(rotationAngle: CGFloat(Float.pi))
+        fourthColorPointer.transform = CGAffineTransform(rotationAngle: CGFloat(Float.pi))
         
-        self.view.layoutIfNeeded()
+        setColorsForFlowModeButtons()
         
         //setting color tab
         choiceButtons.selectedSegmentIndex = COLOR_TAB
         colorViewHeight.constant = CGFloat(COLOR_PICKING_VIEW_HEIGHT)
+        changeTimerTabVisibility(isHidden: true)
+        changeFlowModeTabVisibility(isHidden: true)
         
         //setting timer tab values
         if userData != nil {
@@ -202,61 +206,37 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
         }else{
             countDownTimer.countDownDuration = TimeInterval(DEFAULT_TIMER_VALUE)
         }
-        
-        //hiding timer tab
-        countDownTimer.isHidden = true
-        startButton.isHidden = true
-        timerView.isHidden = true
-        
-        //hiding flow mode tab
-        colorPickerButtonFlowMode.isHidden = true
-        flowSpeedLabel.isHidden = true
-        flowSpeedSlider.isHidden = true
-        colorLabel.isHidden = true
-        firstColorFMButton.isHidden = true
-        secondColorFMButton.isHidden = true
-        thirdColorFMButton.isHidden = true
-        fourthColorFMButton.isHidden = true
-        firstColorPointer.isHidden = true
-        secondColorPointer.isHidden = true
-        thirdColorPointer.isHidden = true
-        fourthColorPointer.isHidden = true
-        startFlowModeButton.isHidden = true
-        firstColorPointer.transform = CGAffineTransform(rotationAngle: CGFloat(Float.pi))
-        secondColorPointer.transform = CGAffineTransform(rotationAngle: CGFloat(Float.pi))
-        thirdColorPointer.transform = CGAffineTransform(rotationAngle: CGFloat(Float.pi))
-        fourthColorPointer.transform = CGAffineTransform(rotationAngle: CGFloat(Float.pi))
 
-        //setting color buttons for flow mode
-        if userData != nil {
-            var colors = [UIColor]()
-            for i in 0...3 {
-                colors.append(userData!.arrayOfFlowModeColors[i])
-            }
-            firstColorFMButton.backgroundColor = colors[0]
-            secondColorFMButton.backgroundColor = colors[1]
-            thirdColorFMButton.backgroundColor = colors[2]
-            fourthColorFMButton.backgroundColor = colors[3]
-            flowSpeedSlider.value = userData!.flowSpeed
-        }else{
-            let defColor = UIColor(hue: CGFloat(DEFAULT_COLOR_VALUE), saturation: 1.0, brightness: 1.0, alpha: 1.0)
-            firstColorFMButton.backgroundColor = defColor
-            secondColorFMButton.backgroundColor = defColor
-            thirdColorFMButton.backgroundColor = defColor
-            fourthColorFMButton.backgroundColor = defColor
+        for button in arrayOfRecentlyUsedColorsButtons {
+            button.layer.cornerRadius = 10.0
         }
-        firstColorFMButton.layer.cornerRadius = 0.5 * firstColorFMButton.bounds.size.width
-        secondColorFMButton.layer.cornerRadius = 0.5 * secondColorFMButton.bounds.size.width
-        thirdColorFMButton.layer.cornerRadius = 0.5 * thirdColorFMButton.bounds.size.width
-        fourthColorFMButton.layer.cornerRadius = 0.5 * fourthColorFMButton.bounds.size.width
         
-//        brightnessSlider.transform = CGAffineTransform(rotationAngle: CGFloat(-Float.pi/2))
-
+        for button in arrayOfFlowModeColorsButtons {
+            button.layer.cornerRadius = 0.5 * button.bounds.size.width
+        }
+        
+        startFlowModeButton.layer.cornerRadius = 15.0
         colorView.layer.cornerRadius = 15.0
         startButton.layer.cornerRadius = 15.0
-        startFlowModeButton.layer.cornerRadius = 15.0
         
+        self.view.backgroundColor = userData!.oneColorLight
         showRecentlyUsedColors()
+        setStatusBarDependingBackgroundColorBrightness()
+        self.view.layoutIfNeeded()
+    }
+    
+    func setColorsForFlowModeButtons(){
+        var i = 0
+        for button in arrayOfFlowModeColorsButtons {
+            var color = DEFAULT_COLOR
+            if userData != nil {
+                if userData!.arrayOfFlowModeColors.count >= 4 {
+                    color = userData!.arrayOfFlowModeColors[i]
+                }
+            }
+            button.backgroundColor = color
+            i += 1
+        }
     }
     
     override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
@@ -282,21 +262,6 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
         colorPicker.selectedColor = self.view.backgroundColor!
         present(colorPicker, animated: true)
         UIApplication.shared.statusBarStyle = .lightContent
-    }
-    
-    func stopFlowMode(){
-        if flowMode != nil {
-            if flowMode!.active == true {
-                startFlowModeButton.setImage(UIImage(systemName: "play.fill"), for: UIControl.State.normal)
-                startFlowModeButton.tintColor = .systemGreen
-                flowMode!.active = false
-                flowMode!.timer?.invalidate()
-                if userData != nil {
-                    self.view.backgroundColor = userData!.oneColorLight
-                    setStatusBarDependingBackgroundColorBrightness()
-                }
-            }
-        }
     }
     
     func colorPickerViewControllerDidFinish(_ viewController: UIColorPickerViewController) {
@@ -327,9 +292,6 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
         setStatusBarDependingBackgroundColorBrightness()
     }
     
-    func colorPickerViewControllerDidSelectColor(_ viewController: UIColorPickerViewController) {
-    }
-    
     func showRecentlyUsedColors() {
         if userData != nil {
             let count = userData!.arrayOfRecntlyUsedColors.count
@@ -347,10 +309,10 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
                 }
             }
         }
-        hideOrShowRecentlyUsedColorsButtons()
+        hideUnactiveRecentlyUsedColors()
     }
     
-    func hideOrShowRecentlyUsedColorsButtons(){
+    func hideUnactiveRecentlyUsedColors(){
         if userData != nil {
             let count = userData!.arrayOfRecntlyUsedColors.count
             for i in 0...4 {
@@ -405,7 +367,6 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
         }
     }
     
-    
     @IBAction func countDownTimerValueChanged(_ sender: Any) {
         let hours = Int(countDownTimer.countDownDuration/60/60)
         let minutes = (Int(countDownTimer.countDownDuration) - Int(hours * 60 * 60))/60
@@ -413,10 +374,6 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
         arrayOfTimerData.append(hours)
         arrayOfTimerData.append(minutes)
         defaults.set(arrayOfTimerData, forKey: TIMER_KEY)
-    }
-    
-    override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -451,34 +408,75 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
     @IBAction func choiceChanged(_ sender: Any) {
         switch choiceButtons.selectedSegmentIndex {
         case COLOR_TAB:
-            colorPickerButtonFlowMode.isHidden = true
-            recentlyUsedColorsView.isHidden = false
-            recentlyUsedLabel.isHidden = false
-            colorPickerButton.isHidden = false
-            countDownTimer.isHidden = true
-            startButton.isHidden = true
-            timerView.isHidden = true
+            changeColorTabVisibility(isHidden: false)
             
-            flowSpeedLabel.isHidden = true
-            flowSpeedSlider.isHidden = true
-            colorLabel.isHidden = true
-            firstColorFMButton.isHidden = true
-            secondColorFMButton.isHidden = true
-            thirdColorFMButton.isHidden = true
-            fourthColorFMButton.isHidden = true
-            firstColorPointer.isHidden = true
-            secondColorPointer.isHidden = true
-            thirdColorPointer.isHidden = true
-            fourthColorPointer.isHidden = true
-            startFlowModeButton.isHidden = true
+            changeTimerTabVisibility(isHidden: true)
+            changeFlowModeTabVisibility(isHidden: true)
             colorViewHeight.constant = CGFloat(COLOR_PICKING_VIEW_HEIGHT)
             self.view.layoutIfNeeded()
             
         case TIMER_TAB:
-            colorPickerButtonFlowMode.isHidden = true
-            recentlyUsedColorsView.isHidden = true
-            recentlyUsedLabel.isHidden = true
-            colorPickerButton.isHidden = true
+            changeColorTabVisibility(isHidden: true)
+            changeFlowModeTabVisibility(isHidden: true)
+            
+            changeTimerTabVisibility(isHidden: false)
+            
+            colorViewHeight.constant = CGFloat(TIMER_VIEW_HEIGHT)
+            self.view.layoutIfNeeded()
+
+        case FLOW_MODE_TAB:
+            changeColorTabVisibility(isHidden: true)
+            changeTimerTabVisibility(isHidden: true)
+            
+            changeFlowModeTabVisibility(isHidden: false)
+            setColorsForFlowModeButtons()
+
+            colorViewHeight.constant = CGFloat(FLOW_MODE_HEIGHT)
+            self.view.layoutIfNeeded()
+
+        default:
+            print("not available index")
+        }
+    }
+    
+    func changeFlowModeTabVisibility(isHidden: Bool) {
+        for button in arrayOfFlowModeColorsButtons {
+            button.isHidden = isHidden
+        }
+        colorPickerButtonFlowMode.isHidden = isHidden
+        flowSpeedLabel.isHidden = isHidden
+        flowSpeedSlider.isHidden = isHidden
+        colorLabel.isHidden = isHidden
+        startFlowModeButton.isHidden = isHidden
+        
+        if isHidden == false {
+            if flowMode != nil && userData != nil {
+                switch flowMode!.changedColorIndex {
+                case FIRST_COLOR_BUTTON_INDEX:
+                    firstColorPointer.isHidden = false
+                case SECOND_COLOR_BUTTON_INDEX:
+                    secondColorPointer.isHidden = false
+                case THIRD_COLOR_BUTTON_INDEX:
+                    thirdColorPointer.isHidden = false
+                case FOURTH_COLOR_BUTTON_INDEX:
+                    fourthColorPointer.isHidden = false
+                default:
+                    firstColorPointer.isHidden = false
+                }
+            }else{
+                firstColorPointer.isHidden = false
+            }
+        }else{
+            firstColorPointer.isHidden = isHidden
+            secondColorPointer.isHidden = isHidden
+            thirdColorPointer.isHidden = isHidden
+            fourthColorPointer.isHidden = isHidden
+        }
+    }
+    
+    func changeTimerTabVisibility(isHidden: Bool){
+        startButton.isHidden = isHidden
+        if isHidden == false {
             if shutdownTimer != nil {
                 if shutdownTimer!.seconds != NOT_ASSIGNED_VALUE && shutdownTimer!.minutes != NOT_ASSIGNED_VALUE && shutdownTimer!.hours != NOT_ASSIGNED_VALUE {
                     timerView.isHidden = false
@@ -486,73 +484,19 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
                     countDownTimer.isHidden = false
                 }
             }
-            
-            startButton.isHidden = false
-            
-            flowSpeedLabel.isHidden = true
-            flowSpeedSlider.isHidden = true
-            colorLabel.isHidden = true
-            firstColorFMButton.isHidden = true
-            secondColorFMButton.isHidden = true
-            thirdColorFMButton.isHidden = true
-            fourthColorFMButton.isHidden = true
-            firstColorPointer.isHidden = true
-            secondColorPointer.isHidden = true
-            thirdColorPointer.isHidden = true
-            fourthColorPointer.isHidden = true
-            startFlowModeButton.isHidden = true
-            colorViewHeight.constant = CGFloat(TIMER_VIEW_HEIGHT)
-            self.view.layoutIfNeeded()
-
-        case FLOW_MODE_TAB:
-            colorPickerButtonFlowMode.isHidden = false
-            recentlyUsedColorsView.isHidden = true
-            recentlyUsedLabel.isHidden = true
-            colorPickerButton.isHidden = true
-            countDownTimer.isHidden = true
-            startButton.isHidden = true
-            timerView.isHidden = true
-            
-            flowSpeedLabel.isHidden = false
-            flowSpeedSlider.isHidden = false
-            colorLabel.isHidden = false
-            firstColorFMButton.isHidden = false
-            secondColorFMButton.isHidden = false
-            thirdColorFMButton.isHidden = false
-            fourthColorFMButton.isHidden = false
-            startFlowModeButton.isHidden = false
-                        
-            if flowMode != nil && userData != nil {
-                switch flowMode!.changedColorIndex {
-                case FIRST_COLOR_BUTTON_INDEX:
-                    firstColorPointer.isHidden = false
-                    firstColorFMButton.backgroundColor = userData!.arrayOfFlowModeColors[FIRST_COLOR_BUTTON_INDEX]
-                case SECOND_COLOR_BUTTON_INDEX:
-                    secondColorPointer.isHidden = false
-                    secondColorFMButton.backgroundColor = userData!.arrayOfFlowModeColors[SECOND_COLOR_BUTTON_INDEX]
-                case THIRD_COLOR_BUTTON_INDEX:
-                    thirdColorPointer.isHidden = false
-                    thirdColorFMButton.backgroundColor = userData!.arrayOfFlowModeColors[THIRD_COLOR_BUTTON_INDEX]
-                case FOURTH_COLOR_BUTTON_INDEX:
-                    fourthColorPointer.isHidden = false
-                    fourthColorFMButton.backgroundColor = userData!.arrayOfFlowModeColors[FOURTH_COLOR_BUTTON_INDEX]
-                default:
-                    firstColorPointer.isHidden = false
-                    firstColorFMButton.backgroundColor = userData!.arrayOfFlowModeColors[FIRST_COLOR_BUTTON_INDEX]
-                }
-            }else{
-                firstColorPointer.isHidden = false
-                firstColorFMButton.backgroundColor = DEFAULT_COLOR
-            }
-            
-            colorViewHeight.constant = CGFloat(FLOW_MODE_HEIGHT)
-            self.view.layoutIfNeeded()
-
-        default:
-            print("not available index")
+        }else{
+            countDownTimer.isHidden = isHidden
+            timerView.isHidden = isHidden
         }
-         
     }
+    
+    func changeColorTabVisibility(isHidden: Bool){
+        recentlyUsedColorsView.isHidden = isHidden
+        recentlyUsedLabel.isHidden = isHidden
+        colorPickerButton.isHidden = isHidden
+    }
+    
+    //TODO pokracovat v refactoringu
     
     @objc func showTimer(){
         if shutdownTimer != nil {
@@ -657,6 +601,21 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
         secondColorPointer.isHidden = true
         thirdColorPointer.isHidden = true
         fourthColorPointer.isHidden = false
+    }
+    
+    func stopFlowMode(){
+        if flowMode != nil {
+            if flowMode!.active == true {
+                startFlowModeButton.setImage(UIImage(systemName: "play.fill"), for: UIControl.State.normal)
+                startFlowModeButton.tintColor = .systemGreen
+                flowMode!.active = false
+                flowMode!.timer?.invalidate()
+                if userData != nil {
+                    self.view.backgroundColor = userData!.oneColorLight
+                    setStatusBarDependingBackgroundColorBrightness()
+                }
+            }
+        }
     }
     
     @IBAction func startButtonFlowModePressed(_ sender: Any) {
