@@ -3,6 +3,7 @@
     <device id="retina6_5" orientation="portrait" appearance="light"/>
     <dependencies>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17703"/>
+        <capability name="Image references" minToolsVersion="12.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -56,18 +57,18 @@
                                     </slider>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="Rýchlosť prechodu" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="nHK-Hb-HrA">
                                         <rect key="frame" x="10" y="148" width="374" height="22"/>
-                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                        <fontDescription key="fontDescription" type="boldSystem" pointSize="17"/>
                                         <nil key="textColor"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Farba" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="jmi-cO-7Cd">
-                                        <rect key="frame" x="10" y="73.666666666666629" width="374" height="21"/>
-                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                        <rect key="frame" x="10" y="83.333333333333371" width="374" height="21"/>
+                                        <fontDescription key="fontDescription" type="boldSystem" pointSize="17"/>
                                         <nil key="textColor"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="cUb-Lh-DN9" userLabel="firstColorFM">
-                                        <rect key="frame" x="10" y="23.666666666666629" width="40" height="40"/>
+                                        <rect key="frame" x="10" y="33.333333333333371" width="40" height="40"/>
                                         <constraints>
                                             <constraint firstAttribute="width" constant="40" id="CVy-cw-jM5"/>
                                             <constraint firstAttribute="height" constant="40" id="f0t-2g-4YE"/>
@@ -77,7 +78,7 @@
                                         </connections>
                                     </button>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="H4B-8j-nAw" userLabel="secondColorFM">
-                                        <rect key="frame" x="60" y="23.666666666666629" width="40" height="40"/>
+                                        <rect key="frame" x="60" y="33.333333333333371" width="40" height="40"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="40" id="obW-iP-Ujn"/>
                                             <constraint firstAttribute="width" constant="40" id="wLI-OS-2S4"/>
@@ -87,7 +88,7 @@
                                         </connections>
                                     </button>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="bxR-5w-fPl" userLabel="thirdColorFM">
-                                        <rect key="frame" x="110" y="23.666666666666629" width="40" height="40"/>
+                                        <rect key="frame" x="110" y="33.333333333333371" width="40" height="40"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="40" id="4XA-9i-G2N"/>
                                             <constraint firstAttribute="width" constant="40" id="6IP-zC-hl3"/>
@@ -97,7 +98,7 @@
                                         </connections>
                                     </button>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ccP-of-QjP" userLabel="fourthcolorFM">
-                                        <rect key="frame" x="160" y="23.666666666666629" width="40" height="40"/>
+                                        <rect key="frame" x="160" y="33.333333333333371" width="40" height="40"/>
                                         <constraints>
                                             <constraint firstAttribute="width" constant="40" id="DrZ-F2-n3y"/>
                                             <constraint firstAttribute="height" constant="40" id="xAk-GE-eWp"/>
@@ -107,7 +108,7 @@
                                         </connections>
                                     </button>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="DPn-px-ws2" userLabel="Start Button Flow Mode">
-                                        <rect key="frame" x="304" y="13.666666666666629" width="80" height="50"/>
+                                        <rect key="frame" x="304" y="23.333333333333371" width="80" height="50"/>
                                         <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <constraints>
                                             <constraint firstAttribute="width" constant="80" id="fAD-Jp-SHi"/>
@@ -157,7 +158,7 @@
                                         </constraints>
                                     </view>
                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="shift.fill" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="W01-gL-cGq" userLabel="fourthColorPointer">
-                                        <rect key="frame" x="160" y="2.9999999999999609" width="40" height="17.333333333333336"/>
+                                        <rect key="frame" x="160" y="12.666666666666703" width="40" height="17.33333333333335"/>
                                         <color key="tintColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="20" id="aG7-he-eBB"/>
@@ -165,7 +166,7 @@
                                         </constraints>
                                     </imageView>
                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="shift.fill" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="Pr3-sn-Zan" userLabel="secondColorPointer">
-                                        <rect key="frame" x="60" y="2.9999999999999609" width="40" height="17.333333333333336"/>
+                                        <rect key="frame" x="60" y="12.666666666666703" width="40" height="17.33333333333335"/>
                                         <color key="tintColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="20" id="3z0-Lu-O2T"/>
@@ -173,7 +174,7 @@
                                         </constraints>
                                     </imageView>
                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="shift.fill" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="hTv-ZG-SJt" userLabel="firstColorPointer">
-                                        <rect key="frame" x="10" y="2.9999999999999609" width="40" height="17.333333333333336"/>
+                                        <rect key="frame" x="10" y="12.666666666666703" width="40" height="17.33333333333335"/>
                                         <color key="tintColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="20" id="75e-XI-aQh"/>
@@ -181,17 +182,19 @@
                                         </constraints>
                                     </imageView>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Vix-lh-Us4" userLabel="ColorPickerButton">
-                                        <rect key="frame" x="10" y="134" width="160" height="34"/>
+                                        <rect key="frame" x="10" y="134" width="188.33333333333334" height="23.333333333333343"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="18"/>
                                         <size key="titleShadowOffset" width="-1" height="0.0"/>
                                         <state key="normal" title="Otvoriť paletu farieb">
                                             <color key="titleColor" systemColor="linkColor"/>
+                                            <imageReference key="image" image="paintpalette.fill" catalog="system" symbolScale="large"/>
                                         </state>
                                         <connections>
                                             <action selector="openColorPicker:" destination="BYZ-38-t0r" eventType="touchUpInside" id="5hf-fW-wCF"/>
                                         </connections>
                                     </button>
                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="shift.fill" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="A1r-NE-iNB" userLabel="thirdColorPointer">
-                                        <rect key="frame" x="110" y="2.9999999999999609" width="40" height="17.333333333333336"/>
+                                        <rect key="frame" x="110" y="12.666666666666703" width="40" height="17.33333333333335"/>
                                         <color key="tintColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="20" id="Bae-LB-ldZ"/>
@@ -199,15 +202,17 @@
                                         </constraints>
                                     </imageView>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Naposledy použité" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="zQn-VO-rZR">
-                                        <rect key="frame" x="10" y="53" width="142" height="21"/>
-                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                        <rect key="frame" x="10" y="53" width="151.66666666666666" height="21"/>
+                                        <fontDescription key="fontDescription" type="boldSystem" pointSize="17"/>
                                         <nil key="textColor"/>
                                         <nil key="highlightedColor"/>
                                     </label>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="EP1-RM-FtM">
-                                        <rect key="frame" x="10" y="104.66666666666663" width="152" height="33"/>
-                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                        <state key="normal" title="Otvoriť paletu farieb"/>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="EP1-RM-FtM">
+                                        <rect key="frame" x="10" y="114.33333333333337" width="188.33333333333334" height="23.333333333333343"/>
+                                        <state key="normal" title="Otvoriť paletu farieb">
+                                            <color key="titleColor" systemColor="linkColor"/>
+                                            <imageReference key="image" image="paintpalette.fill" catalog="system" symbolScale="large"/>
+                                        </state>
                                         <connections>
                                             <action selector="openColorpickerFlowMode:" destination="BYZ-38-t0r" eventType="touchUpInside" id="Sej-Z9-fNw"/>
                                         </connections>
@@ -221,6 +226,7 @@
                                                     <constraint firstAttribute="height" constant="40" id="NQC-FG-lnz"/>
                                                     <constraint firstAttribute="width" constant="40" id="PZB-ou-uPv"/>
                                                 </constraints>
+                                                <fontDescription key="fontDescription" type="system" pointSize="18"/>
                                                 <connections>
                                                     <action selector="recentlyUsedColorButton1Pressed:" destination="BYZ-38-t0r" eventType="touchUpInside" id="G5G-ua-Ibb"/>
                                                 </connections>
@@ -394,6 +400,7 @@
         </scene>
     </scenes>
     <resources>
+        <image name="paintpalette.fill" catalog="system" width="128" height="105"/>
         <image name="play.fill" catalog="system" width="116" height="128"/>
         <image name="shift.fill" catalog="system" width="128" height="106"/>
         <systemColor name="groupTableViewBackgroundColor">

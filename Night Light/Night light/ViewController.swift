@@ -314,7 +314,6 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
                     defaults.setColorItem(item: userData!.arrayOfRecntlyUsedColors, forKey: RECENTLY_USED_COLORS_KEY)
                 }
                 self.view.backgroundColor = viewController.selectedColor
-                setStatusBarDependingBackgroundColorBrightness()
                 showRecentlyUsedColors()
                 defaults.setColorItem(item: viewController.selectedColor, forKey: ONE_COLOR_LIGHT_KEY)
             }
@@ -325,7 +324,7 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
             }
             arrayOfFlowModeColorsButtons[flowMode!.changedColorIndex].backgroundColor = viewController.selectedColor
         }
-        
+        setStatusBarDependingBackgroundColorBrightness()
     }
     
     func colorPickerViewControllerDidSelectColor(_ viewController: UIColorPickerViewController) {
