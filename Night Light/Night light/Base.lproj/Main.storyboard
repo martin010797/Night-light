@@ -17,7 +17,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <slider opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="right" contentVerticalAlignment="center" value="0.5" minValue="0.0" maxValue="1" translatesAutoresizingMaskIntoConstraints="NO" id="RxZ-mH-T43">
-                                <rect key="frame" x="257" y="442" width="254" height="31"/>
+                                <rect key="frame" x="257" y="462" width="254" height="31"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="250" id="yDs-Xc-Xfi"/>
                                 </constraints>
@@ -341,7 +341,7 @@
                             <constraint firstItem="zh5-rY-b0W" firstAttribute="bottom" secondItem="6Tk-OE-BBY" secondAttribute="bottom" constant="-20" id="8c3-o7-6cG"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="zh5-rY-b0W" secondAttribute="trailing" constant="10" id="FBQ-a3-VS1"/>
                             <constraint firstItem="zh5-rY-b0W" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="IPn-et-IPv"/>
-                            <constraint firstItem="zh5-rY-b0W" firstAttribute="top" secondItem="RxZ-mH-T43" secondAttribute="bottom" constant="150" id="TrC-tN-4bh"/>
+                            <constraint firstItem="zh5-rY-b0W" firstAttribute="top" secondItem="RxZ-mH-T43" secondAttribute="bottom" constant="130" id="TrC-tN-4bh"/>
                             <constraint firstItem="zh5-rY-b0W" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="10" id="h8E-4G-330"/>
                             <constraint firstAttribute="trailing" secondItem="RxZ-mH-T43" secondAttribute="trailing" constant="-95" id="mQS-1E-6rG"/>
                         </constraints>
@@ -351,6 +351,8 @@
                     </view>
                     <connections>
                         <outlet property="brightnessSlider" destination="RxZ-mH-T43" id="lhh-r3-mRN"/>
+                        <outlet property="brightnessSliderConstraintDown" destination="TrC-tN-4bh" id="Bpm-AY-BKy"/>
+                        <outlet property="brightnessSliderConstraintRight" destination="mQS-1E-6rG" id="EHt-b9-wAF"/>
                         <outlet property="choiceButtons" destination="m8K-XE-pOb" id="xNH-8T-axv"/>
                         <outlet property="colorLabel" destination="jmi-cO-7Cd" id="Xc2-JX-9Ov"/>
                         <outlet property="colorPickerButton" destination="Vix-lh-Us4" id="dIw-U2-Pf1"/>

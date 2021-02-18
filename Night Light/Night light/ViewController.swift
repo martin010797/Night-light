@@ -64,6 +64,9 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
     @IBOutlet weak var recentlyUsedColor5: UIButton!
     @IBOutlet weak var recentlyUsedColorsView: UIView!
     @IBOutlet weak var colorPickerButtonFlowMode: UIButton!
+    @IBOutlet weak var brightnessSliderConstraintRight: NSLayoutConstraint!
+    
+    @IBOutlet weak var brightnessSliderConstraintDown: NSLayoutConstraint!
     
     var colorPicker = UIColorPickerViewController()
     var arrayOfRecentlyUsedColorsButtons = [UIButton]()
@@ -247,13 +250,30 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
         thirdColorFMButton.layer.cornerRadius = 0.5 * thirdColorFMButton.bounds.size.width
         fourthColorFMButton.layer.cornerRadius = 0.5 * fourthColorFMButton.bounds.size.width
         
-        brightnessSlider.transform = CGAffineTransform(rotationAngle: CGFloat(-Float.pi/2))
+//        brightnessSlider.transform = CGAffineTransform(rotationAngle: CGFloat(-Float.pi/2))
 
         colorView.layer.cornerRadius = 15.0
         startButton.layer.cornerRadius = 15.0
         startFlowModeButton.layer.cornerRadius = 15.0
         
         showRecentlyUsedColors()
+    }
+    
+    override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
+        super.viewWillTransition(to: size, with: coordinator)
+        setBrightnessSliderOrientation()
+    }
+    
+    func setBrightnessSliderOrientation() {
+        if UIDevice.current.orientation.isLandscape{
+            brightnessSlider.transform = CGAffineTransform(rotationAngle: CGFloat(2*Float.pi))
+            brightnessSliderConstraintRight.constant = 10.0
+            brightnessSliderConstraintDown.constant = 10.0
+        }else{
+            brightnessSlider.transform = CGAffineTransform(rotationAngle: CGFloat(-Float.pi/2))
+            brightnessSliderConstraintRight.constant = -95.0
+            brightnessSliderConstraintDown.constant = 130.0
+        }
     }
     
     @IBAction func openColorPicker(_ sender: Any) {
@@ -409,6 +429,7 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
         UIApplication.shared.isIdleTimerDisabled = true;
         
         colorView.backgroundColor = UIColor.lightGray
+        setBrightnessSliderOrientation()
     }
 
     @IBAction func tappedScreeen(_ sender: Any) {
