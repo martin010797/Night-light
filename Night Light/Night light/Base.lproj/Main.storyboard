@@ -55,8 +55,8 @@
                                             <action selector="flowSpeedSliderValueChanged:" destination="BYZ-38-t0r" eventType="valueChanged" id="y0o-jk-5YB"/>
                                         </connections>
                                     </slider>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="Rýchlosť prechodu" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="nHK-Hb-HrA">
-                                        <rect key="frame" x="10" y="148" width="374" height="22"/>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Rýchlosť prechodu" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="nHK-Hb-HrA">
+                                        <rect key="frame" x="10" y="147.66666666666663" width="374" height="20.333333333333343"/>
                                         <fontDescription key="fontDescription" type="boldSystem" pointSize="17"/>
                                         <nil key="textColor"/>
                                         <nil key="highlightedColor"/>
@@ -181,8 +181,8 @@
                                             <constraint firstAttribute="width" constant="40" id="DMV-ct-MTp"/>
                                         </constraints>
                                     </imageView>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Vix-lh-Us4" userLabel="ColorPickerButton">
-                                        <rect key="frame" x="10" y="134" width="188.33333333333334" height="23.333333333333343"/>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="leading" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Vix-lh-Us4" userLabel="ColorPickerButton">
+                                        <rect key="frame" x="10" y="134" width="374" height="23.333333333333343"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="18"/>
                                         <size key="titleShadowOffset" width="-1" height="0.0"/>
                                         <state key="normal" title="Otvoriť paletu farieb">
@@ -202,13 +202,13 @@
                                         </constraints>
                                     </imageView>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Naposledy použité" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="zQn-VO-rZR">
-                                        <rect key="frame" x="10" y="53" width="151.66666666666666" height="21"/>
+                                        <rect key="frame" x="10" y="53" width="374" height="21"/>
                                         <fontDescription key="fontDescription" type="boldSystem" pointSize="17"/>
                                         <nil key="textColor"/>
                                         <nil key="highlightedColor"/>
                                     </label>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="EP1-RM-FtM">
-                                        <rect key="frame" x="10" y="114.33333333333337" width="188.33333333333334" height="23.333333333333343"/>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="leading" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="EP1-RM-FtM">
+                                        <rect key="frame" x="10" y="114.33333333333337" width="374" height="23.333333333333343"/>
                                         <state key="normal" title="Otvoriť paletu farieb">
                                             <color key="titleColor" systemColor="linkColor"/>
                                             <imageReference key="image" image="paintpalette.fill" catalog="system" symbolScale="large"/>
@@ -289,6 +289,7 @@
                                 </subviews>
                                 <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                 <constraints>
+                                    <constraint firstAttribute="trailing" secondItem="EP1-RM-FtM" secondAttribute="trailing" constant="10" id="1JZ-Yp-aqV"/>
                                     <constraint firstAttribute="trailing" secondItem="jmi-cO-7Cd" secondAttribute="trailing" constant="10" id="1a2-X2-pFA"/>
                                     <constraint firstItem="jmi-cO-7Cd" firstAttribute="top" secondItem="DPn-px-ws2" secondAttribute="bottom" constant="10" id="1vf-pe-R1n"/>
                                     <constraint firstAttribute="bottom" secondItem="bTj-NB-XHa" secondAttribute="bottom" constant="10" id="2Xl-zo-8GQ"/>
@@ -303,6 +304,7 @@
                                     <constraint firstItem="zp4-wK-3KG" firstAttribute="top" secondItem="nHK-Hb-HrA" secondAttribute="bottom" constant="10" id="Baf-oh-Qn5"/>
                                     <constraint firstItem="hTv-ZG-SJt" firstAttribute="leading" secondItem="zh5-rY-b0W" secondAttribute="leading" constant="10" id="Ev9-dn-8f2"/>
                                     <constraint firstItem="jmi-cO-7Cd" firstAttribute="leading" secondItem="zh5-rY-b0W" secondAttribute="leading" constant="10" id="Ex7-o1-qqO"/>
+                                    <constraint firstAttribute="trailing" secondItem="zQn-VO-rZR" secondAttribute="trailing" constant="10" id="Fgd-CR-aYX"/>
                                     <constraint firstItem="zQn-VO-rZR" firstAttribute="leading" secondItem="zh5-rY-b0W" secondAttribute="leading" constant="10" id="Fte-bx-53A"/>
                                     <constraint firstItem="ccP-of-QjP" firstAttribute="leading" secondItem="bxR-5w-fPl" secondAttribute="trailing" constant="10" id="G41-ZF-HLx"/>
                                     <constraint firstItem="nHK-Hb-HrA" firstAttribute="leading" secondItem="zh5-rY-b0W" secondAttribute="leading" constant="10" id="JK9-Pw-GNy"/>
@@ -318,9 +320,11 @@
                                     <constraint firstItem="cUb-Lh-DN9" firstAttribute="top" secondItem="hTv-ZG-SJt" secondAttribute="bottom" constant="2" id="Udc-EM-ADJ"/>
                                     <constraint firstItem="zp4-wK-3KG" firstAttribute="leading" secondItem="zh5-rY-b0W" secondAttribute="leading" constant="10" id="VS5-uW-yc0"/>
                                     <constraint firstItem="RST-AN-8XH" firstAttribute="top" secondItem="zQn-VO-rZR" secondAttribute="bottom" id="WcV-72-Rfd"/>
+                                    <constraint firstAttribute="trailing" secondItem="nHK-Hb-HrA" secondAttribute="trailing" constant="10" id="ZFM-Np-s00"/>
                                     <constraint firstItem="ccP-of-QjP" firstAttribute="top" secondItem="W01-gL-cGq" secondAttribute="bottom" constant="2" id="akm-rG-gaT"/>
                                     <constraint firstAttribute="bottom" secondItem="zp4-wK-3KG" secondAttribute="bottom" constant="12" id="dcA-Bb-ACF"/>
                                     <constraint firstItem="nHK-Hb-HrA" firstAttribute="top" secondItem="EP1-RM-FtM" secondAttribute="bottom" constant="10" id="dgK-qK-e5j"/>
+                                    <constraint firstAttribute="trailing" secondItem="Vix-lh-Us4" secondAttribute="trailing" constant="10" id="dru-K6-VjO"/>
                                     <constraint firstItem="ccP-of-QjP" firstAttribute="top" secondItem="W01-gL-cGq" secondAttribute="bottom" constant="2" id="e4n-IS-HRU"/>
                                     <constraint firstItem="A1r-NE-iNB" firstAttribute="leading" secondItem="Pr3-sn-Zan" secondAttribute="trailing" constant="10" id="eey-Pz-hqx"/>
                                     <constraint firstAttribute="bottom" secondItem="8gl-cs-7ON" secondAttribute="bottom" constant="45" id="fQa-61-WUW"/>

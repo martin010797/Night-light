@@ -225,6 +225,18 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
         self.view.layoutIfNeeded()
     }
     
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        
+        setStatusBarDependingBackgroundColorBrightness()
+        
+        //disable going to sleep
+        UIApplication.shared.isIdleTimerDisabled = true;
+        
+        colorView.backgroundColor = UIColor.lightGray
+        setBrightnessSliderOrientation()
+    }
+    
     func setColorsForFlowModeButtons(){
         var i = 0
         for button in arrayOfFlowModeColorsButtons {
@@ -375,18 +387,6 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
         arrayOfTimerData.append(minutes)
         defaults.set(arrayOfTimerData, forKey: TIMER_KEY)
     }
-    
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-        
-        setStatusBarDependingBackgroundColorBrightness()
-        
-        //disable going to sleep
-        UIApplication.shared.isIdleTimerDisabled = true;
-        
-        colorView.backgroundColor = UIColor.lightGray
-        setBrightnessSliderOrientation()
-    }
 
     @IBAction func tappedScreeen(_ sender: Any) {
         if colorView.isHidden{
@@ -495,9 +495,7 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
         recentlyUsedLabel.isHidden = isHidden
         colorPickerButton.isHidden = isHidden
     }
-    
-    //TODO pokracovat v refactoringu
-    
+        
     @objc func showTimer(){
         if shutdownTimer != nil {
             if shutdownTimer!.seconds > 0{
@@ -528,6 +526,7 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
                     }
                 }
                 exit(-1)
+                //if I dont want to exit but just allow idle timer for turning off screen
             }else{
                 setTimerTextLabel()
             }
@@ -693,6 +692,7 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
         }
         defaults.set(flowSpeedSlider.value, forKey: FLOW_SPEED_KEY)
     }
+    
     @IBAction func recentlyUsedColorButton1Pressed(_ sender: Any) {
         self.view.backgroundColor = arrayOfRecentlyUsedColorsButtons[0].backgroundColor
         setStatusBarDependingBackgroundColorBrightness()
@@ -701,8 +701,8 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
         }
         stopFlowMode()
         defaults.setColorItem(item: arrayOfRecentlyUsedColorsButtons[0].backgroundColor, forKey: ONE_COLOR_LIGHT_KEY)
-
     }
+    
     @IBAction func recentlyUsedColorButton2Pressed(_ sender: Any) {
         self.view.backgroundColor = arrayOfRecentlyUsedColorsButtons[1].backgroundColor
         setStatusBarDependingBackgroundColorBrightness()
@@ -712,6 +712,7 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
         stopFlowMode()
         defaults.setColorItem(item: arrayOfRecentlyUsedColorsButtons[1].backgroundColor, forKey: ONE_COLOR_LIGHT_KEY)
     }
+    
     @IBAction func recentlyUsedColorButton3Pressed(_ sender: Any) {
         self.view.backgroundColor = arrayOfRecentlyUsedColorsButtons[2].backgroundColor
         setStatusBarDependingBackgroundColorBrightness()
@@ -721,6 +722,7 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
         stopFlowMode()
         defaults.setColorItem(item: arrayOfRecentlyUsedColorsButtons[2].backgroundColor, forKey: ONE_COLOR_LIGHT_KEY)
     }
+    
     @IBAction func recentlyUsedColorButton4Pressed(_ sender: Any) {
         self.view.backgroundColor = arrayOfRecentlyUsedColorsButtons[3].backgroundColor
         setStatusBarDependingBackgroundColorBrightness()
@@ -730,6 +732,7 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
         stopFlowMode()
         defaults.setColorItem(item: arrayOfRecentlyUsedColorsButtons[3].backgroundColor, forKey: ONE_COLOR_LIGHT_KEY)
     }
+    
     @IBAction func recentlyUsedColorButton5Pressed(_ sender: Any) {
         self.view.backgroundColor = arrayOfRecentlyUsedColorsButtons[4].backgroundColor
         setStatusBarDependingBackgroundColorBrightness()
