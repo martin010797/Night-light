@@ -575,12 +575,10 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
                         flowMode!.timer?.invalidate()
                     }
                 }
-                //pressing home button to minimize app
                 UIApplication.shared.isIdleTimerDisabled = false;
                 UIScreen.main.brightness = CGFloat(0.1)
-                //                exit(-1)
-                UIControl().sendAction(#selector(URLSessionTask.suspend), to: UIApplication.shared, for: nil)
-                //if I dont want to exit but just allow idle timer for turning off screen
+                exit(-1)
+//                UIControl().sendAction(#selector(URLSessionTask.suspend), to: UIApplication.shared, for: nil)
             }else{
                 setTimerTextLabel()
             }
