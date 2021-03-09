@@ -5,8 +5,7 @@
 //  Created by Martin Kostelej on 03/08/2020.
 //  Copyright © 2020 Martin Kostelej. All rights reserved.
 //
-
-let COLOR_PICKING_VIEW_HEIGHT = 180, TIMER_VIEW_HEIGHT = 180, FLOW_MODE_HEIGHT = 270
+let COLOR_PICKING_VIEW_HEIGHT = 180, TIMER_VIEW_HEIGHT = 180, FLOW_MODE_HEIGHT = 270, COLOR_PICKING_HEIGHT_NO_GRADIENT = 215, COLOR_PICKING_HEIGHT_WITH_GRADIENT = 260
 
 let NOT_ASSIGNED_VALUE = -1
 let NUMBER_OF_COLORS_FLOW_MODE = 4
@@ -24,6 +23,8 @@ let INDEX_OF_NEXT_ITEM_IN_RECENTLY_KEY = "INDEX_OF_NEXT_ITEM_IN_RECENTLY_KEY"
 let TIMER_KEY = "TIMER_KEY"
 let FLOW_SPEED_KEY = "FLOW_SPEED_KEY"
 let FLOW_MODE_COLORS_KEY = "FLOW_MODE_COLORS_KEY"
+let GRADIENT_COLORS_KEY = "GRADIENT_COLORS_KEY"
+let GRADIENT_ACTIVE_KEY = "GRADIENT_ACTIVE_KEY"
 
 import UIKit
 
@@ -31,7 +32,7 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
     var userData: UserData?
     var shutdownTimer: ShutdownTimer?
     var flowMode: FlowMode?
-    
+
     @IBOutlet var brightnessSlider: UISlider!
     @IBOutlet var colorView: UIView!
     @IBOutlet var choiceButtons: UISegmentedControl!
@@ -54,6 +55,13 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
     @IBOutlet weak var fourthColorPointer: UIImageView!
     @IBOutlet var startFlowModeButton: UIButton!
     
+    @IBOutlet weak var gradientUseLabel: UILabel!
+    @IBOutlet weak var gradientSwitch: UISwitch!
+    @IBOutlet weak var gradientColor1Label: UILabel!
+    @IBOutlet weak var gradientColor2Label: UILabel!
+    @IBOutlet weak var gradientColor1Button: UIButton!
+    @IBOutlet weak var gradientColor2Button: UIButton!
+    
     @IBOutlet weak var colorPickerButton: UIButton!
     @IBOutlet weak var recentlyUsedLabel: UILabel!
     @IBOutlet weak var recentlyUsedColor1: UIButton!
@@ -64,13 +72,13 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
     @IBOutlet weak var recentlyUsedColorsView: UIView!
     @IBOutlet weak var colorPickerButtonFlowMode: UIButton!
     @IBOutlet weak var brightnessSliderConstraintRight: NSLayoutConstraint!
-    
     @IBOutlet weak var brightnessSliderConstraintDown: NSLayoutConstraint!
     
     var colorPicker = UIColorPickerViewController()
     var arrayOfRecentlyUsedColorsButtons = [UIButton]()
     var arrayOfFlowModeColorsButtons = [UIButton]()
     let defaults = UserDefaults.standard
+    var gradientColorToChange = NOT_ASSIGNED_VALUE
     
     // MARK: Structures
     
@@ -82,7 +90,19 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
         var flowSpeed: Float = Float()
         var timerHours: Int = Int()
         var timerMinutes: Int = Int()
+        var gradientActive: Bool = Bool()
+        var gradientColors = [UIColor]()
         init() {
+            //getting gradient colors
+            var retrievedGradientColors = UserDefaults.standard.colorItemForKey(key: GRADIENT_COLORS_KEY) as? [UIColor] ?? [UIColor]()
+            if retrievedGradientColors.count == 0 {
+                retrievedGradientColors.append(DEFAULT_COLOR)
+                retrievedGradientColors.append(DEFAULT_COLOR)
+                UserDefaults.standard.setColorItem(item: retrievedGradientColors, forKey: GRADIENT_COLORS_KEY)
+            }
+            //getting gradient activity
+            let retrievedGradientActivity = UserDefaults.standard.colorItemForKey(key: GRADIENT_ACTIVE_KEY) as? Bool ?? false
+            
             //getting one color data
             let retrievedColor = UserDefaults.standard.colorItemForKey(key: ONE_COLOR_LIGHT_KEY) as? UIColor ?? DEFAULT_COLOR
             if retrievedColor == DEFAULT_COLOR{
@@ -127,6 +147,8 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
             flowSpeed = retrievedFlowSpeed
             timerHours = retrievedTimer[0]
             timerMinutes = retrievedTimer[1]
+            gradientActive = retrievedGradientActivity
+            gradientColors = retrievedGradientColors
         }
     }
     
@@ -200,9 +222,25 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
         
         //setting color tab
         choiceButtons.selectedSegmentIndex = COLOR_TAB
-        colorViewHeight.constant = CGFloat(COLOR_PICKING_VIEW_HEIGHT)
         changeTimerTabVisibility(isHidden: true)
         changeFlowModeTabVisibility(isHidden: true)
+        
+        //setting gradients
+        gradientColor1Button.layer.cornerRadius = 10.0
+        gradientColor2Button.layer.cornerRadius = 10.0
+        if userData != nil {
+            gradientColor1Button.backgroundColor = userData!.gradientColors[0]
+            gradientColor2Button.backgroundColor = userData!.gradientColors[1]
+            gradientSwitch.isOn = userData!.gradientActive
+            if gradientSwitch.isOn {
+                turnOnGradient()
+            }
+        }else{
+            gradientColor1Button.backgroundColor = DEFAULT_COLOR
+            gradientColor2Button.backgroundColor = DEFAULT_COLOR
+            gradientSwitch.isOn = false
+        }
+        changeByGradientActivity()
         
         //setting timer tab values
         if userData != nil {
@@ -215,7 +253,6 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
         }else{
             countDownTimer.countDownDuration = TimeInterval(DEFAULT_TIMER_VALUE)
         }
-        
 
         for button in arrayOfRecentlyUsedColorsButtons {
             button.layer.cornerRadius = 10.0
@@ -270,7 +307,18 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
     }
     
     func setStatusBarDependingBackgroundColorBrightness(){
-        let cgColor = self.view.backgroundColor!.cgColor
+        var cgColor = DEFAULT_COLOR.cgColor
+        if gradientSwitch.isOn {
+            if flowMode != nil{
+                if flowMode!.active == false {
+                    cgColor = gradientColor1Button.backgroundColor!.cgColor
+                }else{
+                    cgColor = self.view.backgroundColor!.cgColor
+                }
+            }
+        }else{
+            cgColor = self.view.backgroundColor!.cgColor
+        }
         let rgbColor = cgColor.converted(to: CGColorSpaceCreateDeviceRGB(), intent: .defaultIntent, options: nil)
         let rgbComponents = rgbColor?.components
         if rgbComponents != nil && rgbComponents?.count ?? 0 >= 3 {
@@ -297,6 +345,22 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
         }
     }
     
+    func changeByGradientActivity() {
+        if gradientSwitch.isOn {
+            colorViewHeight.constant = CGFloat(COLOR_PICKING_HEIGHT_WITH_GRADIENT)
+            gradientColor1Label.isHidden = false
+            gradientColor1Button.isHidden = false
+            gradientColor2Label.isHidden = false
+            gradientColor2Button.isHidden = false
+        }else{
+            colorViewHeight.constant = CGFloat(COLOR_PICKING_HEIGHT_NO_GRADIENT)
+            gradientColor1Label.isHidden = true
+            gradientColor1Button.isHidden = true
+            gradientColor2Label.isHidden = true
+            gradientColor2Button.isHidden = true
+        }
+    }
+    
     @IBAction func choiceChanged(_ sender: Any) {
         switch choiceButtons.selectedSegmentIndex {
         case COLOR_TAB:
@@ -304,7 +368,7 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
             
             changeTimerTabVisibility(isHidden: true)
             changeFlowModeTabVisibility(isHidden: true)
-            colorViewHeight.constant = CGFloat(COLOR_PICKING_VIEW_HEIGHT)
+            changeByGradientActivity()
             self.view.layoutIfNeeded()
             
         case TIMER_TAB:
@@ -386,11 +450,100 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
         recentlyUsedColorsView.isHidden = isHidden
         recentlyUsedLabel.isHidden = isHidden
         colorPickerButton.isHidden = isHidden
+        gradientSwitch.isHidden = isHidden
+        gradientUseLabel.isHidden = isHidden
+        gradientColor1Button.isHidden = isHidden
+        gradientColor2Button.isHidden = isHidden
+        gradientColor1Label.isHidden = isHidden
+        gradientColor2Label.isHidden = isHidden
     }
     
     // MARK: Color tab functions
     
+    @IBAction func gradientActiveValueChanged(_ sender: Any) {
+        if userData != nil {
+            userData!.gradientActive = gradientSwitch.isOn
+        }
+        defaults.setColorItem(item: gradientSwitch.isOn, forKey: GRADIENT_ACTIVE_KEY)
+        changeByGradientActivity()
+        if gradientSwitch.isOn {
+            turnOnGradient()
+        }else{
+            if flowMode != nil {
+                if flowMode!.active == false {
+                    self.view.layer.sublayers?.remove(at: 0)
+                }
+            }
+        }
+        if flowMode != nil {
+            if flowMode!.active {
+                stopFlowMode()
+            }
+        }
+        setStatusBarDependingBackgroundColorBrightness()
+    }
+    
+    func turnOffGradient() {
+        if gradientSwitch.isOn {
+            gradientSwitch.setOn(false, animated: true)
+            if userData != nil {
+                userData!.gradientActive = gradientSwitch.isOn
+            }
+            defaults.setColorItem(item: gradientSwitch.isOn, forKey: GRADIENT_ACTIVE_KEY)
+            changeByGradientActivity()
+            if flowMode != nil {
+                if flowMode!.active == false {
+                    self.view.layer.sublayers?.remove(at: 0)
+                }
+            }
+        }
+    }
+    
+    @IBAction func gradientColor1ButtonPressed(_ sender: Any) {
+        gradientColorToChange = 0
+        if flowMode != nil {
+            if flowMode!.active {
+                turnOnGradient()
+            }
+        }
+        stopFlowMode()
+        if userData != nil {
+            colorPicker.selectedColor = userData!.gradientColors[0]
+        }else{
+            colorPicker.selectedColor = DEFAULT_COLOR
+        }
+        colorPicker.supportsAlpha = false
+        present(colorPicker, animated: true)
+        UIApplication.shared.statusBarStyle = .lightContent
+    }
+    
+    @IBAction func gradientColor2ButtonPressed(_ sender: Any) {
+        gradientColorToChange = 1
+        if flowMode != nil {
+            if flowMode!.active {
+                turnOnGradient()
+            }
+        }
+        stopFlowMode()
+        if userData != nil {
+            colorPicker.selectedColor = userData!.gradientColors[1]
+        }else{
+            colorPicker.selectedColor = DEFAULT_COLOR
+        }
+        colorPicker.supportsAlpha = false
+        present(colorPicker, animated: true)
+        UIApplication.shared.statusBarStyle = .lightContent
+    }
+    
+    func turnOnGradient(){
+        let gradientLayer = CAGradientLayer()
+        gradientLayer.frame = self.view.bounds
+        gradientLayer.colors = [gradientColor1Button.backgroundColor?.cgColor, gradientColor2Button.backgroundColor?.cgColor]
+        self.view.layer.insertSublayer(gradientLayer, at: 0)
+    }
+    
     @IBAction func openColorPicker(_ sender: Any) {
+        turnOffGradient()
         stopFlowMode()
         colorPicker.supportsAlpha = false
         colorPicker.selectedColor = self.view.backgroundColor!
@@ -400,21 +553,36 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
     
     func colorPickerViewControllerDidFinish(_ viewController: UIColorPickerViewController) {
         if choiceButtons.selectedSegmentIndex == COLOR_TAB {
-            if viewController.selectedColor != self.view.backgroundColor {
-                if userData != nil {
-                    if userData!.arrayOfRecntlyUsedColors.count < RECENTLY_USED_COLORS_MAX_COUNT {
-                        userData!.arrayOfRecntlyUsedColors.append(viewController.selectedColor)
+            if gradientSwitch.isOn {
+                if gradientColorToChange != NOT_ASSIGNED_VALUE {
+                    if gradientColorToChange == 0 {
+                        gradientColor1Button.backgroundColor = colorPicker.selectedColor
+                        userData?.gradientColors[0] = colorPicker.selectedColor
                     }else{
-                        userData!.arrayOfRecntlyUsedColors[userData!.indexOfNextItemInRecently] = viewController.selectedColor
+                        gradientColor2Button.backgroundColor = colorPicker.selectedColor
+                        userData?.gradientColors[1] = colorPicker.selectedColor
                     }
-                    userData!.indexOfNextItemInRecently = (userData!.indexOfNextItemInRecently + 1) % RECENTLY_USED_COLORS_MAX_COUNT
-                    defaults.set(userData!.indexOfNextItemInRecently, forKey: INDEX_OF_NEXT_ITEM_IN_RECENTLY_KEY)
-                    userData!.oneColorLight = viewController.selectedColor
-                    defaults.setColorItem(item: userData!.arrayOfRecntlyUsedColors, forKey: RECENTLY_USED_COLORS_KEY)
+                    UserDefaults.standard.setColorItem(item: userData?.gradientColors, forKey: GRADIENT_COLORS_KEY)
+                    self.view.layer.sublayers?.remove(at: 0)
+                    turnOnGradient()
                 }
-                self.view.backgroundColor = viewController.selectedColor
-                showRecentlyUsedColors()
-                defaults.setColorItem(item: viewController.selectedColor, forKey: ONE_COLOR_LIGHT_KEY)
+            }else{
+                if viewController.selectedColor != self.view.backgroundColor {
+                    if userData != nil {
+                        if userData!.arrayOfRecntlyUsedColors.count < RECENTLY_USED_COLORS_MAX_COUNT {
+                            userData!.arrayOfRecntlyUsedColors.append(viewController.selectedColor)
+                        }else{
+                            userData!.arrayOfRecntlyUsedColors[userData!.indexOfNextItemInRecently] = viewController.selectedColor
+                        }
+                        userData!.indexOfNextItemInRecently = (userData!.indexOfNextItemInRecently + 1) % RECENTLY_USED_COLORS_MAX_COUNT
+                        defaults.set(userData!.indexOfNextItemInRecently, forKey: INDEX_OF_NEXT_ITEM_IN_RECENTLY_KEY)
+                        userData!.oneColorLight = viewController.selectedColor
+                        defaults.setColorItem(item: userData!.arrayOfRecntlyUsedColors, forKey: RECENTLY_USED_COLORS_KEY)
+                    }
+                    self.view.backgroundColor = viewController.selectedColor
+                    showRecentlyUsedColors()
+                    defaults.setColorItem(item: viewController.selectedColor, forKey: ONE_COLOR_LIGHT_KEY)
+                }
             }
         }else{
             if userData != nil && flowMode != nil {
@@ -465,6 +633,7 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
         if userData != nil {
             userData!.oneColorLight = arrayOfRecentlyUsedColorsButtons[0].backgroundColor!
         }
+        turnOffGradient()
         stopFlowMode()
         defaults.setColorItem(item: arrayOfRecentlyUsedColorsButtons[0].backgroundColor, forKey: ONE_COLOR_LIGHT_KEY)
     }
@@ -475,6 +644,7 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
         if userData != nil {
             userData!.oneColorLight = arrayOfRecentlyUsedColorsButtons[1].backgroundColor!
         }
+        turnOffGradient()
         stopFlowMode()
         defaults.setColorItem(item: arrayOfRecentlyUsedColorsButtons[1].backgroundColor, forKey: ONE_COLOR_LIGHT_KEY)
     }
@@ -485,6 +655,7 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
         if userData != nil {
             userData!.oneColorLight = arrayOfRecentlyUsedColorsButtons[2].backgroundColor!
         }
+        turnOffGradient()
         stopFlowMode()
         defaults.setColorItem(item: arrayOfRecentlyUsedColorsButtons[2].backgroundColor, forKey: ONE_COLOR_LIGHT_KEY)
     }
@@ -495,6 +666,7 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
         if userData != nil {
             userData!.oneColorLight = arrayOfRecentlyUsedColorsButtons[3].backgroundColor!
         }
+        turnOffGradient()
         stopFlowMode()
         defaults.setColorItem(item: arrayOfRecentlyUsedColorsButtons[3].backgroundColor, forKey: ONE_COLOR_LIGHT_KEY)
     }
@@ -505,6 +677,7 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
         if userData != nil {
             userData!.oneColorLight = arrayOfRecentlyUsedColorsButtons[4].backgroundColor!
         }
+        turnOffGradient()
         stopFlowMode()
         defaults.setColorItem(item: arrayOfRecentlyUsedColorsButtons[4].backgroundColor, forKey: ONE_COLOR_LIGHT_KEY)
     }
@@ -688,6 +861,9 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
     @IBAction func startButtonFlowModePressed(_ sender: Any) {
         if flowMode != nil {
             if flowMode!.active == false {
+                if gradientSwitch.isOn {
+                    self.view.layer.sublayers?.remove(at: 0)
+                }
                 startFlowModeButton.setImage(UIImage(systemName: "stop.fill"), for: UIControl.State.normal)
                 startFlowModeButton.tintColor = .systemRed
                 flowMode!.active = true
@@ -697,6 +873,9 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
                 flowMode!.indexOfColor = 4
                 flowingColors()
             }else{
+                if gradientSwitch.isOn {
+                    turnOnGradient()
+                }
                 stopFlowMode()
             }
         }
@@ -819,5 +998,3 @@ extension UserDefaults {
         set(colorData, forKey: key)
     }
 }
-
-
