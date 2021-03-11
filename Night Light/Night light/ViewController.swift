@@ -13,6 +13,7 @@ let COLOR_TAB = 0, TIMER_TAB = 1, FLOW_MODE_TAB = 2
 let DEFAULT_TIMER_VALUE = 60
 let FIRST_COLOR_BUTTON_INDEX = 0, SECOND_COLOR_BUTTON_INDEX = 1, THIRD_COLOR_BUTTON_INDEX = 2, FOURTH_COLOR_BUTTON_INDEX = 3
 let RECENTLY_USED_COLORS_MAX_COUNT = 5
+let RECENTLY_USED_COLORS_FIRST_BUTTON_INDEX = 0, RECENTLY_USED_COLORS_SECOND_BUTTON_INDEX = 1, RECENTLY_USED_COLORS_THIRD_BUTTON_INDEX = 2, RECENTLY_USED_COLORS_FOURTH_BUTTON_INDEX = 3, RECENTLY_USED_COLORS_FIFTH_BUTTON_INDEX = 4
 let DEFAULT_COLOR = UIColor.orange
 let DEFAULT_TIMER_HOURS = 1
 let DEFAULT_TIMER_MINUTES = 30
@@ -29,10 +30,12 @@ let GRADIENT_ACTIVE_KEY = "GRADIENT_ACTIVE_KEY"
 import UIKit
 
 class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
+    //struktury
     var userData: UserData?
     var shutdownTimer: ShutdownTimer?
     var flowMode: FlowMode?
 
+    //prepojenia ku elementom vlozenych vo view
     @IBOutlet var brightnessSlider: UISlider!
     @IBOutlet var colorView: UIView!
     @IBOutlet var choiceButtons: UISegmentedControl!
@@ -82,6 +85,7 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
     
     // MARK: Structures
     
+    //pouzivatelske data ktore sa ukladaju do databazy UserDefaults
     struct UserData {
         var oneColorLight: UIColor = UIColor()
         var arrayOfFlowModeColors = [UIColor]()
@@ -152,6 +156,7 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
         }
     }
     
+    //casovac pre vypnutie
     struct ShutdownTimer {
         var hours: Int
         var minutes: Int
@@ -159,6 +164,7 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
         var timerBeforeExit: Timer?
     }
     
+    //prechod farieb
     struct FlowMode {
         var changedColorIndex: Int
         var active: Bool
@@ -301,11 +307,23 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
         }
     }
     
+    //zmeny pri otoceni zariadenia
     override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
         super.viewWillTransition(to: size, with: coordinator)
         setBrightnessSliderOrientation()
+        coordinator.animate(alongsideTransition: nil) { _ in
+            if self.gradientSwitch.isOn {
+                if self.flowMode != nil {
+                    if self.flowMode!.active == false {
+                        self.view.layer.sublayers?.remove(at: 0)
+                        self.turnOnGradient()
+                    }
+                }
+            }
+        }
     }
     
+    //prisposobenie farby status baru podla farby pozadia
     func setStatusBarDependingBackgroundColorBrightness(){
         var cgColor = DEFAULT_COLOR.cgColor
         if gradientSwitch.isOn {
@@ -333,6 +351,7 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
         }
     }
     
+    //prisposobenie slideru pre nastavenie jasu podla orientacie na vysku alebo sirku
     func setBrightnessSliderOrientation() {
         if UIDevice.current.orientation.isLandscape{
             brightnessSlider.transform = CGAffineTransform(rotationAngle: CGFloat(2*Float.pi))
@@ -345,6 +364,7 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
         }
     }
     
+    //zmena sirky menu a prvkov podla toho ci je zvoleny gradient
     func changeByGradientActivity() {
         if gradientSwitch.isOn {
             colorViewHeight.constant = CGFloat(COLOR_PICKING_HEIGHT_WITH_GRADIENT)
@@ -361,6 +381,7 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
         }
     }
     
+    //zmena menu podla zvolenej moznosti
     @IBAction func choiceChanged(_ sender: Any) {
         switch choiceButtons.selectedSegmentIndex {
         case COLOR_TAB:
@@ -395,6 +416,7 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
         }
     }
     
+    //prisposobenie viditelnosti menu prechodu farieb podla toho ci bolo zvolene
     func changeFlowModeTabVisibility(isHidden: Bool) {
         for button in arrayOfFlowModeColorsButtons {
             button.isHidden = isHidden
@@ -430,6 +452,7 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
         }
     }
     
+    //prisposobenie viditelnosti menu casovaca podla toho ci bolo zvolene
     func changeTimerTabVisibility(isHidden: Bool){
         startButton.isHidden = isHidden
         if isHidden == false {
@@ -446,6 +469,7 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
         }
     }
     
+    //prisposobenie viditelnosti menu farby pozadia podla toho ci bolo zvolene
     func changeColorTabVisibility(isHidden: Bool){
         recentlyUsedColorsView.isHidden = isHidden
         recentlyUsedLabel.isHidden = isHidden
@@ -542,6 +566,7 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
         self.view.layer.insertSublayer(gradientLayer, at: 0)
     }
     
+    //otvara sa paleta farieb pre jednofarebne pozadie
     @IBAction func openColorPicker(_ sender: Any) {
         turnOffGradient()
         stopFlowMode()
@@ -551,6 +576,7 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
         UIApplication.shared.statusBarStyle = .lightContent
     }
     
+    //akcie nastavane pri zatvoreni palety farieb
     func colorPickerViewControllerDidFinish(_ viewController: UIColorPickerViewController) {
         if choiceButtons.selectedSegmentIndex == COLOR_TAB {
             if gradientSwitch.isOn {
@@ -562,7 +588,7 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
                         gradientColor2Button.backgroundColor = colorPicker.selectedColor
                         userData?.gradientColors[1] = colorPicker.selectedColor
                     }
-                    UserDefaults.standard.setColorItem(item: userData?.gradientColors, forKey: GRADIENT_COLORS_KEY)
+                    defaults.setColorItem(item: userData?.gradientColors, forKey: GRADIENT_COLORS_KEY)
                     self.view.layer.sublayers?.remove(at: 0)
                     turnOnGradient()
                 }
@@ -594,6 +620,7 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
         setStatusBarDependingBackgroundColorBrightness()
     }
     
+    //nastavi farbu tlacidlam pre naposledy zvolene farby
     func showRecentlyUsedColors() {
         if userData != nil {
             let count = userData!.arrayOfRecntlyUsedColors.count
@@ -614,6 +641,7 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
         hideUnactiveRecentlyUsedColors()
     }
     
+    //ak je menej ako 5 naposledy zvolených farieb tak nepouzite tlacidla skryje
     func hideUnactiveRecentlyUsedColors(){
         if userData != nil {
             let count = userData!.arrayOfRecntlyUsedColors.count
@@ -628,58 +656,34 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
     }
     
     @IBAction func recentlyUsedColorButton1Pressed(_ sender: Any) {
-        self.view.backgroundColor = arrayOfRecentlyUsedColorsButtons[0].backgroundColor
-        setStatusBarDependingBackgroundColorBrightness()
-        if userData != nil {
-            userData!.oneColorLight = arrayOfRecentlyUsedColorsButtons[0].backgroundColor!
-        }
-        turnOffGradient()
-        stopFlowMode()
-        defaults.setColorItem(item: arrayOfRecentlyUsedColorsButtons[0].backgroundColor, forKey: ONE_COLOR_LIGHT_KEY)
+        setBackgroundColorForRecentlyUsedColorButton(indexOfButton: RECENTLY_USED_COLORS_FIRST_BUTTON_INDEX)
     }
     
     @IBAction func recentlyUsedColorButton2Pressed(_ sender: Any) {
-        self.view.backgroundColor = arrayOfRecentlyUsedColorsButtons[1].backgroundColor
-        setStatusBarDependingBackgroundColorBrightness()
-        if userData != nil {
-            userData!.oneColorLight = arrayOfRecentlyUsedColorsButtons[1].backgroundColor!
-        }
-        turnOffGradient()
-        stopFlowMode()
-        defaults.setColorItem(item: arrayOfRecentlyUsedColorsButtons[1].backgroundColor, forKey: ONE_COLOR_LIGHT_KEY)
+        setBackgroundColorForRecentlyUsedColorButton(indexOfButton: RECENTLY_USED_COLORS_SECOND_BUTTON_INDEX)
     }
     
     @IBAction func recentlyUsedColorButton3Pressed(_ sender: Any) {
-        self.view.backgroundColor = arrayOfRecentlyUsedColorsButtons[2].backgroundColor
-        setStatusBarDependingBackgroundColorBrightness()
-        if userData != nil {
-            userData!.oneColorLight = arrayOfRecentlyUsedColorsButtons[2].backgroundColor!
-        }
-        turnOffGradient()
-        stopFlowMode()
-        defaults.setColorItem(item: arrayOfRecentlyUsedColorsButtons[2].backgroundColor, forKey: ONE_COLOR_LIGHT_KEY)
+        setBackgroundColorForRecentlyUsedColorButton(indexOfButton: RECENTLY_USED_COLORS_THIRD_BUTTON_INDEX)
     }
     
     @IBAction func recentlyUsedColorButton4Pressed(_ sender: Any) {
-        self.view.backgroundColor = arrayOfRecentlyUsedColorsButtons[3].backgroundColor
-        setStatusBarDependingBackgroundColorBrightness()
-        if userData != nil {
-            userData!.oneColorLight = arrayOfRecentlyUsedColorsButtons[3].backgroundColor!
-        }
-        turnOffGradient()
-        stopFlowMode()
-        defaults.setColorItem(item: arrayOfRecentlyUsedColorsButtons[3].backgroundColor, forKey: ONE_COLOR_LIGHT_KEY)
+        setBackgroundColorForRecentlyUsedColorButton(indexOfButton: RECENTLY_USED_COLORS_FOURTH_BUTTON_INDEX)
     }
     
     @IBAction func recentlyUsedColorButton5Pressed(_ sender: Any) {
-        self.view.backgroundColor = arrayOfRecentlyUsedColorsButtons[4].backgroundColor
+        setBackgroundColorForRecentlyUsedColorButton(indexOfButton: RECENTLY_USED_COLORS_FIFTH_BUTTON_INDEX)
+    }
+    
+    func setBackgroundColorForRecentlyUsedColorButton(indexOfButton: Int) {
+        self.view.backgroundColor = arrayOfRecentlyUsedColorsButtons[indexOfButton].backgroundColor
         setStatusBarDependingBackgroundColorBrightness()
         if userData != nil {
-            userData!.oneColorLight = arrayOfRecentlyUsedColorsButtons[4].backgroundColor!
+            userData!.oneColorLight = arrayOfRecentlyUsedColorsButtons[indexOfButton].backgroundColor!
         }
         turnOffGradient()
         stopFlowMode()
-        defaults.setColorItem(item: arrayOfRecentlyUsedColorsButtons[4].backgroundColor, forKey: ONE_COLOR_LIGHT_KEY)
+        defaults.setColorItem(item: arrayOfRecentlyUsedColorsButtons[indexOfButton].backgroundColor, forKey: ONE_COLOR_LIGHT_KEY)
     }
     
     //MARK: Timer functions
@@ -693,6 +697,7 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
         defaults.set(arrayOfTimerData, forKey: TIMER_KEY)
     }
     
+    //vypisovanie zostavajuceho casu
     func setTimerTextLabel(){
         var helpHours:String = "0"
         var helpMinutes:String = "0"
@@ -719,6 +724,7 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
         }
     }
     
+    //vypocet kazdu sekundu pre zostavajuci cas
     @objc func showTimer(){
         if shutdownTimer != nil {
             if shutdownTimer!.seconds > 0{
@@ -758,6 +764,7 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
         }
     }
     
+    //zapnutie a vypnutie casovacu
     @IBAction func startButtonTimerPressed(_ sender: Any) {
         if shutdownTimer != nil {
             if shutdownTimer!.seconds == NOT_ASSIGNED_VALUE && shutdownTimer!.minutes == NOT_ASSIGNED_VALUE && shutdownTimer!.hours == NOT_ASSIGNED_VALUE {
@@ -788,6 +795,7 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
     
     // MARK: Flow mode functions
     
+    //priradi spravne farby pre tlacidla farieb
     func setColorsForFlowModeButtons(){
         var i = 0
         for button in arrayOfFlowModeColorsButtons {
@@ -843,6 +851,7 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
         fourthColorPointer.isHidden = false
     }
     
+    //rusi casovac ktory vchadzal do funkcie pre prechod medzi farbami
     func stopFlowMode(){
         if flowMode != nil {
             if flowMode!.active == true {
@@ -858,6 +867,7 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
         }
     }
     
+    //zapnutie a vpynutie prechodu farieb
     @IBAction func startButtonFlowModePressed(_ sender: Any) {
         if flowMode != nil {
             if flowMode!.active == false {
@@ -881,6 +891,7 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
         }
     }
     
+    //prechadza medzi farbami podla casu
     @objc func flowingColors(){
         if flowMode != nil {
             if flowMode!.enteredTimes == 0 {
@@ -940,6 +951,7 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
         defaults.set(flowSpeedSlider.value, forKey: FLOW_SPEED_KEY)
     }
     
+    //otvara paletu farieb pre nastavenie farby pre prechod medzi nimi
     @IBAction func openColorpickerFlowMode(_ sender: Any) {
         colorPicker.supportsAlpha = false
         if flowMode != nil {
@@ -953,6 +965,7 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
 
 extension UIColor {
 
+    //tmavnutie a zosvetlovanie farieb
     func modified(withAdditionalHue hue: CGFloat, additionalSaturation: CGFloat, additionalBrightness: CGFloat) -> UIColor {
 
         var currentHue: CGFloat = 0.0
@@ -971,6 +984,7 @@ extension UIColor {
     }
 }
 
+//pristup a ukladanie dat
 extension UserDefaults {
     func colorItemForKey(key: String) -> Any? {
         var colorReturnded: Any?
