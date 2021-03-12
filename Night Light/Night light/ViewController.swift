@@ -44,6 +44,7 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
     @IBOutlet var startButton: UIButton!
     @IBOutlet var timerLabel: UILabel!
     @IBOutlet weak var timerView: UIView!
+    @IBOutlet weak var infoTimerButton: UIButton!
     
     @IBOutlet var flowSpeedSlider: UISlider!
     @IBOutlet var flowSpeedLabel: UILabel!
@@ -57,6 +58,7 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
     @IBOutlet weak var thirdColorPointer: UIImageView!
     @IBOutlet weak var fourthColorPointer: UIImageView!
     @IBOutlet var startFlowModeButton: UIButton!
+    @IBOutlet weak var infoFlowModeButton: UIButton!
     
     @IBOutlet weak var gradientUseLabel: UILabel!
     @IBOutlet weak var gradientSwitch: UISwitch!
@@ -76,6 +78,7 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
     @IBOutlet weak var colorPickerButtonFlowMode: UIButton!
     @IBOutlet weak var brightnessSliderConstraintRight: NSLayoutConstraint!
     @IBOutlet weak var brightnessSliderConstraintDown: NSLayoutConstraint!
+    @IBOutlet weak var infoColorsButton: UIButton!
     
     var colorPicker = UIColorPickerViewController()
     var arrayOfRecentlyUsedColorsButtons = [UIButton]()
@@ -426,6 +429,7 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
         flowSpeedSlider.isHidden = isHidden
         colorLabel.isHidden = isHidden
         startFlowModeButton.isHidden = isHidden
+        infoFlowModeButton.isHidden = isHidden
         
         if isHidden == false {
             if flowMode != nil && userData != nil {
@@ -467,6 +471,7 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
             countDownTimer.isHidden = isHidden
             timerView.isHidden = isHidden
         }
+        infoTimerButton.isHidden = isHidden
     }
     
     //prisposobenie viditelnosti menu farby pozadia podla toho ci bolo zvolene
@@ -480,6 +485,7 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
         gradientColor2Button.isHidden = isHidden
         gradientColor1Label.isHidden = isHidden
         gradientColor2Label.isHidden = isHidden
+        infoColorsButton.isHidden = isHidden
     }
     
     // MARK: Color tab functions
@@ -686,6 +692,13 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
         defaults.setColorItem(item: arrayOfRecentlyUsedColorsButtons[indexOfButton].backgroundColor, forKey: ONE_COLOR_LIGHT_KEY)
     }
     
+    //zobrazi informacie o vybere farby pozadia
+    @IBAction func infoColorsPressed(_ sender: Any) {
+        let alert = UIAlertController(title: "Výber pozadia", message: "Pre zvolenie jednej farby pozadia vyberte z piatich naposledy použitých farieb. Pokiaľ chcete inú farbu, tak zvoľte možnosť pre otvorenie palety farieb. Táto voľba sa automaticky pridá medzi naposledy zvolené. \n \n Ak je potrebné prelínanie dvoch farieb, tak zapnite možnosť pre gradient. Následne sa nižšie zobrazia dve tlačidlá s farbami, ktoré sa medzi sebou budú miešať. Pre zmenu kliknite na ne a otovrí sa paleta farieb.", preferredStyle: UIAlertController.Style.alert)
+        alert.addAction(UIAlertAction(title: "OK", style: UIAlertAction.Style.default, handler: nil))
+        self.present(alert, animated: true, completion: nil)
+    }
+    
     //MARK: Timer functions
         
     @IBAction func countDownTimerValueChanged(_ sender: Any) {
@@ -791,6 +804,12 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
                 countDownTimer.isHidden = false
             }
         }
+    }
+    
+    @IBAction func infoTimer(_ sender: Any) {
+        let alert = UIAlertController(title: "Nastavenie časovača", message: "Časovač slúži pre šetrenie batérie zariadenia. Určuje čas po uplynutí ktorého sa aplikácia vypne a zníži jas na minimum. Ak chcete aj celkové vypnutie displeja tak choďte do: Nastavenie/Displej a jas/Uzamykanie a nastavte požadovaný čas po vypnutí aplikácie. \n \n Po zvolení hodín a minút stlačte čierno zlené tlačidlo na pravej strane pre spustenie časovača. Ak chcete časovač vypnúť tak stlačte opätovne to isté tlačidlo.", preferredStyle: UIAlertController.Style.alert)
+        alert.addAction(UIAlertAction(title: "OK", style: UIAlertAction.Style.default, handler: nil))
+        self.present(alert, animated: true, completion: nil)
     }
     
     // MARK: Flow mode functions
@@ -961,6 +980,12 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
         UIApplication.shared.statusBarStyle = .lightContent
     }
     
+    //zobrazenie informacii pre prechod medzi farbami
+    @IBAction func infoFlowMode(_ sender: Any) {
+        let alert = UIAlertController(title: "Prechod farieb", message: "Prechod medzi farbami slúži na striedanie medzi štyrmi farbami po určitom čase. \n \n Farby medzi ktorými sa prechádza sú reprezentované štyrmi tlačidlami. Pokiaľ chcete niektoré zmeniť, tak naň kliknite a zobrarzí sa nad ním šípka, čo určuje že sa aktuálne môže modifikovať. Pre zmenu vyberte možnosť pre otvorenie palety farieb. \n \n Slider naspodku určuje ako rýchlo sa budú farby medzi sebou striedať(vľavo pomalšie a vpravo rýchlejšie). Pre spustenie alebo vypnutie stlačte čierno zelené tlačidlo v pravom hornom rohu menu.", preferredStyle: UIAlertController.Style.alert)
+        alert.addAction(UIAlertAction(title: "OK", style: UIAlertAction.Style.default, handler: nil))
+        self.present(alert, animated: true, completion: nil)
+    }
 }
 
 extension UIColor {
