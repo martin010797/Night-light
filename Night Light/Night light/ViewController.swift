@@ -26,6 +26,12 @@ let FLOW_SPEED_KEY = "FLOW_SPEED_KEY"
 let FLOW_MODE_COLORS_KEY = "FLOW_MODE_COLORS_KEY"
 let GRADIENT_COLORS_KEY = "GRADIENT_COLORS_KEY"
 let GRADIENT_ACTIVE_KEY = "GRADIENT_ACTIVE_KEY"
+let COLOR_INFO_TEXT = "Pre zvolenie jednej farby pozadia vyberte z piatich naposledy použitých farieb. Pokiaľ chcete inú farbu, tak zvoľte možnosť pre otvorenie palety farieb. Táto voľba sa automaticky pridá medzi naposledy zvolené. \n \n Ak je potrebné prelínanie dvoch farieb, tak zapnite možnosť pre gradient. Následne sa nižšie zobrazia dve tlačidlá s farbami, ktoré sa medzi sebou budú miešať. Pre zmenu kliknite na ne a otovrí sa paleta farieb."
+let COLOR_INFO_TITLE = "Výber pozadia"
+let TIMER_INFO_TEXT = "Časovač slúži pre šetrenie batérie zariadenia. Určuje čas po uplynutí ktorého sa aplikácia vypne a zníži jas na minimum. Ak chcete aj celkové vypnutie displeja tak choďte do: Nastavenie/Displej a jas/Uzamykanie a nastavte požadovaný čas po vypnutí aplikácie. \n \n Po zvolení hodín a minút stlačte čierno zlené tlačidlo na pravej strane pre spustenie časovača. Ak chcete časovač vypnúť tak stlačte opätovne to isté tlačidlo."
+let TIMER_INFO_TITLE = "Nastavenie časovača"
+let FLOW_MODE_INFO_TEXT = "Prechod medzi farbami slúži na striedanie medzi štyrmi farbami po určitom čase. \n \n Farby medzi ktorými sa prechádza sú reprezentované štyrmi tlačidlami. Pokiaľ chcete niektoré zmeniť, tak naň kliknite a zobrarzí sa nad ním šípka, čo určuje že sa aktuálne môže modifikovať. Pre zmenu vyberte možnosť pre otvorenie palety farieb. \n \n Slider naspodku určuje ako rýchlo sa budú farby medzi sebou striedať(vľavo pomalšie a vpravo rýchlejšie). Pre spustenie alebo vypnutie stlačte čierno zelené tlačidlo v pravom hornom rohu menu."
+let FLOW_MODE_INFO_TITLE = "Prechod farieb"
 
 import UIKit
 
@@ -694,7 +700,7 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
     
     //zobrazi informacie o vybere farby pozadia
     @IBAction func infoColorsPressed(_ sender: Any) {
-        let alert = UIAlertController(title: "Výber pozadia", message: "Pre zvolenie jednej farby pozadia vyberte z piatich naposledy použitých farieb. Pokiaľ chcete inú farbu, tak zvoľte možnosť pre otvorenie palety farieb. Táto voľba sa automaticky pridá medzi naposledy zvolené. \n \n Ak je potrebné prelínanie dvoch farieb, tak zapnite možnosť pre gradient. Následne sa nižšie zobrazia dve tlačidlá s farbami, ktoré sa medzi sebou budú miešať. Pre zmenu kliknite na ne a otovrí sa paleta farieb.", preferredStyle: UIAlertController.Style.alert)
+        let alert = UIAlertController(title: COLOR_INFO_TITLE, message: COLOR_INFO_TEXT, preferredStyle: UIAlertController.Style.alert)
         alert.addAction(UIAlertAction(title: "OK", style: UIAlertAction.Style.default, handler: nil))
         self.present(alert, animated: true, completion: nil)
     }
@@ -807,7 +813,7 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
     }
     
     @IBAction func infoTimer(_ sender: Any) {
-        let alert = UIAlertController(title: "Nastavenie časovača", message: "Časovač slúži pre šetrenie batérie zariadenia. Určuje čas po uplynutí ktorého sa aplikácia vypne a zníži jas na minimum. Ak chcete aj celkové vypnutie displeja tak choďte do: Nastavenie/Displej a jas/Uzamykanie a nastavte požadovaný čas po vypnutí aplikácie. \n \n Po zvolení hodín a minút stlačte čierno zlené tlačidlo na pravej strane pre spustenie časovača. Ak chcete časovač vypnúť tak stlačte opätovne to isté tlačidlo.", preferredStyle: UIAlertController.Style.alert)
+        let alert = UIAlertController(title: TIMER_INFO_TITLE, message: TIMER_INFO_TEXT, preferredStyle: UIAlertController.Style.alert)
         alert.addAction(UIAlertAction(title: "OK", style: UIAlertAction.Style.default, handler: nil))
         self.present(alert, animated: true, completion: nil)
     }
@@ -982,7 +988,7 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
     
     //zobrazenie informacii pre prechod medzi farbami
     @IBAction func infoFlowMode(_ sender: Any) {
-        let alert = UIAlertController(title: "Prechod farieb", message: "Prechod medzi farbami slúži na striedanie medzi štyrmi farbami po určitom čase. \n \n Farby medzi ktorými sa prechádza sú reprezentované štyrmi tlačidlami. Pokiaľ chcete niektoré zmeniť, tak naň kliknite a zobrarzí sa nad ním šípka, čo určuje že sa aktuálne môže modifikovať. Pre zmenu vyberte možnosť pre otvorenie palety farieb. \n \n Slider naspodku určuje ako rýchlo sa budú farby medzi sebou striedať(vľavo pomalšie a vpravo rýchlejšie). Pre spustenie alebo vypnutie stlačte čierno zelené tlačidlo v pravom hornom rohu menu.", preferredStyle: UIAlertController.Style.alert)
+        let alert = UIAlertController(title: FLOW_MODE_INFO_TITLE, message: FLOW_MODE_INFO_TEXT, preferredStyle: UIAlertController.Style.alert)
         alert.addAction(UIAlertAction(title: "OK", style: UIAlertAction.Style.default, handler: nil))
         self.present(alert, animated: true, completion: nil)
     }
