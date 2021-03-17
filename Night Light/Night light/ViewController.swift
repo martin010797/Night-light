@@ -5,7 +5,7 @@
 //  Created by Martin Kostelej on 03/08/2020.
 //  Copyright © 2020 Martin Kostelej. All rights reserved.
 //
-let COLOR_PICKING_VIEW_HEIGHT = 180, TIMER_VIEW_HEIGHT = 180, FLOW_MODE_HEIGHT = 270, COLOR_PICKING_HEIGHT_NO_GRADIENT = 215, COLOR_PICKING_HEIGHT_WITH_GRADIENT = 260
+let COLOR_PICKING_VIEW_HEIGHT = 180, TIMER_VIEW_HEIGHT = 180, FLOW_MODE_HEIGHT = 270, COLOR_PICKING_HEIGHT_ACTIVE_GRADIENT_OR_IMAGE = 290, COLOR_PICKING_HEIGHT_ACTIVE_BASIC_COLOR = 250
 
 let NOT_ASSIGNED_VALUE = -1
 let NUMBER_OF_COLORS_FLOW_MODE = 4
@@ -18,6 +18,8 @@ let DEFAULT_COLOR = UIColor.orange
 let DEFAULT_TIMER_HOURS = 1
 let DEFAULT_TIMER_MINUTES = 30
 let DEFAULT_FLOW_SPEED = 0.5
+let DEFAULT_IMAGE_INDEX = 0
+let DEFAULT_IMAGE_NAME = "background_image_1"
 let ONE_COLOR_LIGHT_KEY = "ONE_COLOR_LIGHT"
 let RECENTLY_USED_COLORS_KEY = "RECENTLY_USED_COLORS_KEY"
 let INDEX_OF_NEXT_ITEM_IN_RECENTLY_KEY = "INDEX_OF_NEXT_ITEM_IN_RECENTLY_KEY"
@@ -26,7 +28,9 @@ let FLOW_SPEED_KEY = "FLOW_SPEED_KEY"
 let FLOW_MODE_COLORS_KEY = "FLOW_MODE_COLORS_KEY"
 let GRADIENT_COLORS_KEY = "GRADIENT_COLORS_KEY"
 let GRADIENT_ACTIVE_KEY = "GRADIENT_ACTIVE_KEY"
-let COLOR_INFO_TEXT = "Pre zvolenie jednej farby pozadia vyberte z piatich naposledy použitých farieb. Pokiaľ chcete inú farbu, tak zvoľte možnosť pre otvorenie palety farieb. Táto voľba sa automaticky pridá medzi naposledy zvolené. \n \n Ak je potrebné prelínanie dvoch farieb, tak zapnite možnosť pre gradient. Následne sa nižšie zobrazia dve tlačidlá s farbami, ktoré sa medzi sebou budú miešať. Pre zmenu kliknite na ne a otovrí sa paleta farieb."
+let IMAGE_ACTIVE_KEY = "IMAGE_ACTIVE_KEY"
+let IMAGE_INDEX_KEY = "IMAGE_INDEX_KEY"
+let COLOR_INFO_TEXT = "Pre zvolenie jednej farby pozadia vyberte z piatich naposledy použitých farieb. Pokiaľ chcete inú farbu, tak zvoľte možnosť pre otvorenie palety farieb. Táto voľba sa automaticky pridá medzi naposledy zvolené. \n \n Ak je potrebné prelínanie dvoch farieb, tak zapnite možnosť pre gradient. Následne sa nižšie zobrazia dve tlačidlá s farbami, ktoré sa medzi sebou budú miešať. Pre zmenu kliknite na ne a otovrí sa paleta farieb. \n \n Pokiaľ chce používateľ nastaviť na pozadie niektorý z obrázkov, tak je potrebné prepnúť možnosť pre použitie obrázku. Potom sa zobrazí pod prepínačom možnosť pre zmenu."
 let COLOR_INFO_TITLE = "Výber pozadia"
 let TIMER_INFO_TEXT = "Časovač slúži pre šetrenie batérie zariadenia. Určuje čas po uplynutí ktorého sa aplikácia vypne a zníži jas na minimum. Ak chcete aj celkové vypnutie displeja tak choďte do: Nastavenie/Displej a jas/Uzamykanie a nastavte požadovaný čas po vypnutí aplikácie. \n \n Po zvolení hodín a minút stlačte čierno zlené tlačidlo na pravej strane pre spustenie časovača. Ak chcete časovač vypnúť tak stlačte opätovne to isté tlačidlo."
 let TIMER_INFO_TITLE = "Nastavenie časovača"
@@ -86,6 +90,14 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
     @IBOutlet weak var brightnessSliderConstraintDown: NSLayoutConstraint!
     @IBOutlet weak var infoColorsButton: UIButton!
     
+    @IBOutlet weak var backgroundImageView: UIImageView!
+    @IBOutlet weak var imageUseLabel: UILabel!
+    @IBOutlet weak var imageUseLabelTopConstraint: NSLayoutConstraint!
+    @IBOutlet weak var imageThumbnail: UIImageView!
+    @IBOutlet weak var changeImageButton: UIButton!
+    @IBOutlet weak var imageSwitch: UISwitch!
+    @IBOutlet weak var imageSwitchBottomConstraint: NSLayoutConstraint!
+    
     var colorPicker = UIColorPickerViewController()
     var arrayOfRecentlyUsedColorsButtons = [UIButton]()
     var arrayOfFlowModeColorsButtons = [UIButton]()
@@ -105,6 +117,8 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
         var timerMinutes: Int = Int()
         var gradientActive: Bool = Bool()
         var gradientColors = [UIColor]()
+        var imageActive: Bool = Bool()
+        var imageIndex: Int = Int()
         init() {
             //getting gradient colors
             var retrievedGradientColors = UserDefaults.standard.colorItemForKey(key: GRADIENT_COLORS_KEY) as? [UIColor] ?? [UIColor]()
@@ -115,6 +129,12 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
             }
             //getting gradient activity
             let retrievedGradientActivity = UserDefaults.standard.colorItemForKey(key: GRADIENT_ACTIVE_KEY) as? Bool ?? false
+            
+            //getting image activity
+            let retrievedImageActivity = UserDefaults.standard.bool(forKey: IMAGE_ACTIVE_KEY)
+            
+            //getting image index
+            let retrievedImageIndex = UserDefaults.standard.integer(forKey: IMAGE_INDEX_KEY)
             
             //getting one color data
             let retrievedColor = UserDefaults.standard.colorItemForKey(key: ONE_COLOR_LIGHT_KEY) as? UIColor ?? DEFAULT_COLOR
@@ -162,6 +182,8 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
             timerMinutes = retrievedTimer[1]
             gradientActive = retrievedGradientActivity
             gradientColors = retrievedGradientColors
+            imageActive = retrievedImageActivity
+            imageIndex = retrievedImageIndex
         }
     }
     
@@ -255,7 +277,20 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
             gradientColor2Button.backgroundColor = DEFAULT_COLOR
             gradientSwitch.isOn = false
         }
-        changeByGradientActivity()
+        changeByGradientOrImageActivity()
+        
+        //setting image
+        imageThumbnail.layer.cornerRadius = 10.0
+        if userData != nil {
+            imageSwitch.isOn = userData!.imageActive
+            if imageSwitch.isOn {
+                turnOnImage()
+                changeByGradientOrImageActivity()
+            }
+            imageThumbnail.image = getImage(index: userData!.imageIndex)
+        }else{
+            imageThumbnail.image = UIImage(named: DEFAULT_IMAGE_NAME)!
+        }
         
         //setting timer tab values
         if userData != nil {
@@ -283,8 +318,8 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
         
         self.view.backgroundColor = userData!.oneColorLight
         showRecentlyUsedColors()
-        setStatusBarDependingBackgroundColorBrightness()
         self.view.layoutIfNeeded()
+        setStatusBarDependingBackgroundColorBrightness()
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -358,6 +393,13 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
         }else{
             UIApplication.shared.statusBarStyle = .lightContent
         }
+        if imageSwitch.isOn {
+            if flowMode != nil{
+                if flowMode!.active == false {
+                    UIApplication.shared.statusBarStyle = .lightContent
+                }
+            }
+        }
     }
     
     //prisposobenie slideru pre nastavenie jasu podla orientacie na vysku alebo sirku
@@ -373,16 +415,31 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
         }
     }
     
-    //zmena sirky menu a prvkov podla toho ci je zvoleny gradient
-    func changeByGradientActivity() {
+    //zmena sirky menu a prvkov podla toho ci je zvoleny gradient alebo obrazok
+    func changeByGradientOrImageActivity() {
         if gradientSwitch.isOn {
-            colorViewHeight.constant = CGFloat(COLOR_PICKING_HEIGHT_WITH_GRADIENT)
+            colorViewHeight.constant = CGFloat(COLOR_PICKING_HEIGHT_ACTIVE_GRADIENT_OR_IMAGE)
+            imageThumbnail.isHidden = true
+            changeImageButton.isHidden = true
+            imageUseLabelTopConstraint.constant = 65
+            imageSwitchBottomConstraint.constant = 20
             gradientColor1Label.isHidden = false
             gradientColor1Button.isHidden = false
             gradientColor2Label.isHidden = false
             gradientColor2Button.isHidden = false
         }else{
-            colorViewHeight.constant = CGFloat(COLOR_PICKING_HEIGHT_NO_GRADIENT)
+            if imageSwitch.isOn {
+                colorViewHeight.constant = CGFloat(COLOR_PICKING_HEIGHT_ACTIVE_GRADIENT_OR_IMAGE)
+                imageThumbnail.isHidden = false
+                changeImageButton.isHidden = false
+                imageSwitchBottomConstraint.constant = 60
+            }else{
+                colorViewHeight.constant = CGFloat(COLOR_PICKING_HEIGHT_ACTIVE_BASIC_COLOR)
+                imageSwitchBottomConstraint.constant = 20
+                imageThumbnail.isHidden = true
+                changeImageButton.isHidden = true
+            }
+            imageUseLabelTopConstraint.constant = 15
             gradientColor1Label.isHidden = true
             gradientColor1Button.isHidden = true
             gradientColor2Label.isHidden = true
@@ -398,7 +455,7 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
             
             changeTimerTabVisibility(isHidden: true)
             changeFlowModeTabVisibility(isHidden: true)
-            changeByGradientActivity()
+            changeByGradientOrImageActivity()
             self.view.layoutIfNeeded()
             
         case TIMER_TAB:
@@ -492,6 +549,10 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
         gradientColor1Label.isHidden = isHidden
         gradientColor2Label.isHidden = isHidden
         infoColorsButton.isHidden = isHidden
+        imageSwitch.isHidden = isHidden
+        imageUseLabel.isHidden = isHidden
+        imageThumbnail.isHidden = isHidden
+        changeImageButton.isHidden = isHidden
     }
     
     // MARK: Color tab functions
@@ -501,9 +562,10 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
             userData!.gradientActive = gradientSwitch.isOn
         }
         defaults.setColorItem(item: gradientSwitch.isOn, forKey: GRADIENT_ACTIVE_KEY)
-        changeByGradientActivity()
+        changeByGradientOrImageActivity()
         if gradientSwitch.isOn {
             turnOnGradient()
+            turnOffImage()
         }else{
             if flowMode != nil {
                 if flowMode!.active == false {
@@ -526,7 +588,7 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
                 userData!.gradientActive = gradientSwitch.isOn
             }
             defaults.setColorItem(item: gradientSwitch.isOn, forKey: GRADIENT_ACTIVE_KEY)
-            changeByGradientActivity()
+            changeByGradientOrImageActivity()
             if flowMode != nil {
                 if flowMode!.active == false {
                     self.view.layer.sublayers?.remove(at: 0)
@@ -578,9 +640,101 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
         self.view.layer.insertSublayer(gradientLayer, at: 0)
     }
     
+    @IBAction func imageSwitchValueChanged(_ sender: Any) {
+        if imageSwitch.isOn {
+            turnOnImage()
+        }else{
+            backgroundImageView.isHidden = true
+            defaults.set(imageSwitch.isOn, forKey: IMAGE_ACTIVE_KEY)
+            setStatusBarDependingBackgroundColorBrightness()
+        }
+        turnOffGradient()
+        stopFlowMode()
+        changeByGradientOrImageActivity()
+    }
+    
+    func turnOffImage(){
+        if imageSwitch.isOn {
+            imageSwitch.setOn(false, animated: true)
+            backgroundImageView.isHidden = true
+            if userData != nil {
+                userData!.imageActive = imageSwitch.isOn
+            }
+            defaults.set(imageSwitch.isOn, forKey: IMAGE_ACTIVE_KEY)
+            changeByGradientOrImageActivity()
+        }
+    }
+    
+    //zobrazi obrazok na pozadi
+    func turnOnImage() {
+        if userData != nil {
+            backgroundImageView.image = getImage(index: userData!.imageIndex)
+            userData!.imageActive = imageSwitch.isOn
+        }else{
+            backgroundImageView.image = UIImage(named: DEFAULT_IMAGE_NAME)!
+        }
+        backgroundImageView.isHidden = false
+        defaults.set(imageSwitch.isOn, forKey: IMAGE_ACTIVE_KEY)
+        setStatusBarDependingBackgroundColorBrightness()
+    }
+    
+    func getImage(index: Int) -> UIImage {
+        switch index {
+        case 0:
+            return UIImage(named: "background_image_1")!
+        case 1:
+            return UIImage(named: "background_image_2")!
+        case 2:
+            return UIImage(named: "background_image_3")!
+        case 3:
+            return UIImage(named: "background_image_4")!
+        case 4:
+            return UIImage(named: "background_image_5")!
+        case 5:
+            return UIImage(named: "background_image_6")!
+        case 6:
+            return UIImage(named: "background_image_7")!
+        case 7:
+            return UIImage(named: "background_image_8")!
+        case 8:
+            return UIImage(named: "background_image_9")!
+        case 9:
+            return UIImage(named: "background_image_10")!
+        case 10:
+            return UIImage(named: "background_image_11")!
+        case 11:
+            return UIImage(named: "background_image_12")!
+        case 12:
+            return UIImage(named: "background_image_13")!
+        case 13:
+            return UIImage(named: "background_image_14")!
+        case 14:
+            return UIImage(named: "background_image_15")!
+        default:
+            return UIImage(named: DEFAULT_IMAGE_NAME)!
+        }
+    }
+    
+    func saveImage(imageIndex: Int) {
+        if userData != nil {
+            userData!.imageIndex = imageIndex
+        }
+        defaults.set(imageIndex, forKey: IMAGE_INDEX_KEY)
+        imageThumbnail.image = getImage(index: imageIndex)
+        turnOnImage()
+    }
+    
+    @IBAction func changeImageButtonPressed(_ sender: Any) {
+        turnOnImage()
+        turnOffGradient()
+        stopFlowMode()
+        changeByGradientOrImageActivity()
+    }
+  
     //otvara sa paleta farieb pre jednofarebne pozadie
     @IBAction func openColorPicker(_ sender: Any) {
         turnOffGradient()
+        turnOffImage()
         stopFlowMode()
         colorPicker.supportsAlpha = false
         colorPicker.selectedColor = self.view.backgroundColor!
@@ -689,13 +843,14 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
     
     func setBackgroundColorForRecentlyUsedColorButton(indexOfButton: Int) {
         self.view.backgroundColor = arrayOfRecentlyUsedColorsButtons[indexOfButton].backgroundColor
-        setStatusBarDependingBackgroundColorBrightness()
         if userData != nil {
             userData!.oneColorLight = arrayOfRecentlyUsedColorsButtons[indexOfButton].backgroundColor!
         }
         turnOffGradient()
+        turnOffImage()
         stopFlowMode()
         defaults.setColorItem(item: arrayOfRecentlyUsedColorsButtons[indexOfButton].backgroundColor, forKey: ONE_COLOR_LIGHT_KEY)
+        setStatusBarDependingBackgroundColorBrightness()
     }
     
     //zobrazi informacie o vybere farby pozadia
@@ -899,6 +1054,7 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
                 if gradientSwitch.isOn {
                     self.view.layer.sublayers?.remove(at: 0)
                 }
+                backgroundImageView.isHidden = true
                 startFlowModeButton.setImage(UIImage(systemName: "stop.fill"), for: UIControl.State.normal)
                 startFlowModeButton.tintColor = .systemRed
                 flowMode!.active = true
@@ -912,6 +1068,10 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
                     turnOnGradient()
                 }
                 stopFlowMode()
+                if imageSwitch.isOn {
+                    backgroundImageView.isHidden = false
+                    setStatusBarDependingBackgroundColorBrightness()
+                }
             }
         }
     }
