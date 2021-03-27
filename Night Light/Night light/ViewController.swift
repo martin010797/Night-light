@@ -294,9 +294,6 @@ class ViewController: UIViewController, UIColorPickerViewControllerDelegate {
         
         //setting timer tab values
         if userData != nil {
-//            let min = userData?.timerMinutes ?? 1
-//            let hrs = userData?.timerHours ?? 0
-//            countDownTimer.countDownDuration = TimeInterval((hrs * 60 + min) * 60)
             let calendar = Calendar(identifier: .gregorian)
             let date = DateComponents(calendar: calendar, hour: userData?.timerHours ?? 0, minute: userData?.timerMinutes ?? 1).date!
             countDownTimer.setDate(date, animated: true)
