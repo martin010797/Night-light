@@ -7,8 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		1E3EEB9626038A94005132D6 /* InfoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E3EEB9526038A94005132D6 /* InfoViewController.swift */; };
-		1E3EEB9A26038BC0005132D6 /* InfoViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E3EEB9926038BC0005132D6 /* InfoViewCell.swift */; };
 		1E40C08D24D86019005DAC7F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E40C08C24D86019005DAC7F /* AppDelegate.swift */; };
 		1E40C08F24D86019005DAC7F /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E40C08E24D86019005DAC7F /* SceneDelegate.swift */; };
 		1E40C09124D86019005DAC7F /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E40C09024D86019005DAC7F /* ViewController.swift */; };
@@ -20,8 +18,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		1E3EEB9526038A94005132D6 /* InfoViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InfoViewController.swift; sourceTree = "<group>"; };
-		1E3EEB9926038BC0005132D6 /* InfoViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InfoViewCell.swift; sourceTree = "<group>"; };
 		1E40C08924D86019005DAC7F /* Night light.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Night light.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		1E40C08C24D86019005DAC7F /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		1E40C08E24D86019005DAC7F /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -69,8 +65,6 @@
 				1E40C09024D86019005DAC7F /* ViewController.swift */,
 				1EEB38532600D8530049785E /* ImagesViewController.swift */,
 				1EEB38572600DB810049785E /* ImagesViewCell.swift */,
-				1E3EEB9526038A94005132D6 /* InfoViewController.swift */,
-				1E3EEB9926038BC0005132D6 /* InfoViewCell.swift */,
 				1E40C09224D86019005DAC7F /* Main.storyboard */,
 				1E40C09524D8601C005DAC7F /* Assets.xcassets */,
 				1E40C09724D8601C005DAC7F /* LaunchScreen.storyboard */,
@@ -153,9 +147,7 @@
 				1E40C09124D86019005DAC7F /* ViewController.swift in Sources */,
 				1EEB38582600DB810049785E /* ImagesViewCell.swift in Sources */,
 				1E40C08D24D86019005DAC7F /* AppDelegate.swift in Sources */,
-				1E3EEB9A26038BC0005132D6 /* InfoViewCell.swift in Sources */,
 				1EEB38542600D8540049785E /* ImagesViewController.swift in Sources */,
-				1E3EEB9626038A94005132D6 /* InfoViewController.swift in Sources */,
 				1E40C08F24D86019005DAC7F /* SceneDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
